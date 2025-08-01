@@ -40,14 +40,12 @@ public class PollController {
 
 	private final CentrifugoServerApiClient centrifugoServerApiClient;
 
-	PollController(CentrifugoProperties centrifugoProperties,
-			CentrifugoServerApiClient centrifugoServerApiClient) {
+	PollController(CentrifugoProperties centrifugoProperties, CentrifugoServerApiClient centrifugoServerApiClient) {
 		this.centrifugoProperties = centrifugoProperties;
 		this.centrifugoServerApiClient = centrifugoServerApiClient;
 
 		this.db = DBMaker.fileDB("./counter.db").transactionEnable().make();
-		this.pollMap = this.db.hashMap("polls", Serializer.STRING, Serializer.LONG)
-				.createOrOpen();
+		this.pollMap = this.db.hashMap("polls", Serializer.STRING, Serializer.LONG).createOrOpen();
 
 		for (String os : oss) {
 			this.pollMap.putIfAbsent(os, 0L);
@@ -86,8 +84,7 @@ public class PollController {
 
 	@GetMapping("/token")
 	public String token() {
-		return JWT.create().withSubject("poll").withClaim("channels", List.of("poll"))
-				.sign(this.algorithmHS);
+		return JWT.create().withSubject("poll").withClaim("channels", List.of("poll")).sign(this.algorithmHS);
 	}
 
 	private void sendPollData() {
@@ -102,7 +99,7 @@ public class PollController {
 		}
 
 		PublishResponse response = this.centrifugoServerApiClient.publication()
-				.publish(p -> p.channel("poll").data(Map.of("result", sb.toString())));
+			.publish(p -> p.channel("poll").data(Map.of("result", sb.toString())));
 		System.out.println("Response: " + response);
 	}
 
