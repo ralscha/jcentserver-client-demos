@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.0-M1</version>
+		<relativePath/>
+	</parent>
+	<groupId>ch.rasc</groupId>
+	<artifactId>iss</artifactId>
+	<version>0.0.1</version>
+	<name>iss</name>
+	<description>Demo project for Centrifugo</description>
+	<properties>
+		<java.version>24</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-webflux</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.rasc</groupId>
+			<artifactId>jcentserver-client</artifactId>
+			<version>1.0.0</version>		
+		</dependency>		
+
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-api</artifactId>
+		    <version>0.12.6</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-impl</artifactId>
+		    <version>0.12.6</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>io.jsonwebtoken</groupId>
+		    <artifactId>jjwt-jackson</artifactId>
+		    <version>0.12.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			
+			<plugin>
+				<groupId>io.spring.javaformat</groupId>
+				<artifactId>spring-javaformat-maven-plugin</artifactId>
+				<version>0.0.47</version>
+			</plugin>            
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>4.6</version>
+                <configuration>
+                    <licenseSets>
+                        <licenseSet>
+                            <header>${basedir}/src/main/config/header.txt</header>
+                            <excludes>
+                                <exclude>**/*.xml</exclude>
+                                <exclude>**/*.md</exclude>
+                                <exclude>**/*.py</exclude>
+                                <exclude>LICENSE</exclude>
+                                <exclude>.travis.yml</exclude>
+                                <exclude>**/.gitignore</exclude>
+                                <exclude>.factorypath</exclude>
+                                <exclude>.mvn/**/*</exclude>
+                                <exclude>mvnw.cmd</exclude>
+                                <exclude>mvnw</exclude>
+                                <exclude>.apt_generated/**</exclude>
+                                <exclude>.editorconfig</exclude>
+                                <exclude>.github/**</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>			
+		</plugins>
+	</build>
+
+</project>

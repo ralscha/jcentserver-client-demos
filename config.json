@@ -1,0 +1,23 @@
+{
+  "client": {
+    "token": {
+      "hmac_secret_key": "bc33457f-c7f3-4ecf-840a-21f3b8274476"
+    },
+    "allowed_origins": [
+      "http://localhost:5173"
+    ]
+  },
+  "channel": {
+    "without_namespace": {
+      "allow_subscribe_for_client": true
+    }
+  },
+  "admin": {
+    "enabled": true,
+    "password": "c0938be9-84cf-4439-92b0-e81e3ab4f017",
+    "secret": "45022286-512b-4a6e-b245-edd2765ee50e"
+  },
+  "http_api": {
+    "key": "d0cee815-23b2-4036-98c7-df971d933606"
+  }
+}
