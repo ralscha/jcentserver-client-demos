@@ -22,7 +22,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
-import ch.rasc.jcentserverclient.models.PublishResponse;
 import jakarta.annotation.PreDestroy;
 
 @RestController
@@ -41,7 +40,8 @@ public class SnakeController {
 
 	private final CentrifugoServerApiClient centrifugoServerApiClient;
 
-	SnakeController(CentrifugoProperties centrifugoProperties, CentrifugoServerApiClient centrifugoServerApiClient) {
+	SnakeController(CentrifugoProperties centrifugoProperties,
+			CentrifugoServerApiClient centrifugoServerApiClient) {
 		this.centrifugoProperties = centrifugoProperties;
 		this.centrifugoServerApiClient = centrifugoServerApiClient;
 		this.algorithmHS = Algorithm.HMAC512(this.centrifugoProperties.hmacSecret());
@@ -89,7 +89,8 @@ public class SnakeController {
 
 	@GetMapping("/token")
 	public String token() {
-		return JWT.create().withSubject("snake").withClaim("channels", List.of("snake")).sign(this.algorithmHS);
+		return JWT.create().withSubject("snake").withClaim("channels", List.of("snake"))
+				.sign(this.algorithmHS);
 	}
 
 	@GetMapping("/test")
@@ -137,12 +138,10 @@ public class SnakeController {
 				updateData.add(locationsData);
 			}
 
-			// Check for new deaths
 			if (!wasDead && snake.isDead()) {
 				deadSnakes.add(snake.getId());
 			}
 
-			// Check for new kills
 			if (!hadKills && snake.hasKilled()) {
 				killerSnakes.add(snake.getId());
 			}
@@ -153,14 +152,12 @@ public class SnakeController {
 			publishToChannel("snake", updateMsg);
 		}
 
-		// Send death notifications
-		for (String deadSnakeId : deadSnakes) {
+		if (!deadSnakes.isEmpty()) {
 			SnakeMessage deadMsg = SnakeMessage.createDeadMessage();
 			publishToChannel("snake", deadMsg);
 		}
 
-		// Send kill notifications
-		for (String killerSnakeId : killerSnakes) {
+		if (!killerSnakes.isEmpty()) {
 			SnakeMessage killMsg = SnakeMessage.createKillMessage();
 			publishToChannel("snake", killMsg);
 		}
@@ -207,7 +204,8 @@ public class SnakeController {
 
 	private void publishToChannel(String channel, SnakeMessage message) {
 		try {
-			this.centrifugoServerApiClient.publication().publish(p -> p.channel(channel).data(message));
+			this.centrifugoServerApiClient.publication()
+					.publish(p -> p.channel(channel).data(message));
 		}
 		catch (Exception e) {
 			System.err.println("Failed to publish message: " + e.getMessage());

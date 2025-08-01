@@ -50,8 +50,6 @@ public class Snake {
 	}
 
 	public synchronized void update(Collection<Snake> snakes) {
-		System.out
-			.println("Snake " + this.id + " updating. Current direction: " + this.direction + ", head: " + this.head);
 		Location nextLocation = this.head.getAdjacentLocation(this.direction);
 		if (nextLocation.x >= SnakeUtils.PLAYFIELD_WIDTH) {
 			nextLocation.x = 0;
@@ -66,16 +64,11 @@ public class Snake {
 			nextLocation.y = SnakeUtils.PLAYFIELD_HEIGHT;
 		}
 		if (this.direction != Direction.NONE) {
-			System.out.println("Snake " + this.id + " moving from " + this.head + " to " + nextLocation);
 			this.tail.addFirst(this.head);
 			if (this.tail.size() > this.length) {
 				this.tail.removeLast();
 			}
 			this.head = nextLocation;
-			System.out.println("Snake " + this.id + " new head: " + this.head + ", tail size: " + this.tail.size());
-		}
-		else {
-			System.out.println("Snake " + this.id + " not moving because direction is NONE");
 		}
 
 		handleCollisions(snakes);
@@ -103,7 +96,6 @@ public class Snake {
 	}
 
 	public synchronized void setDirection(Direction direction) {
-		System.out.println("Snake " + this.id + " direction changed from " + this.direction + " to " + direction);
 		this.direction = direction;
 	}
 
