@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Snake</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #playground {
+            width: 640px;
+            height: 480px;
+            background-color: #000;
+            border: 2px solid #333;
+        }
+
+        .controls {
+            margin-top: 10px;
+            text-align: center;
+            color: #333;
+        }
+
+        .controls h3 {
+            margin: 5px 0;
+        }
+
+        .controls p {
+            margin: 2px 0;
+            font-size: 14px;
+        }
+
+        #console-container {
+            width: 300px;
+        }
+
+        #console {
+            border: 1px solid #CCCCCC;
+            border-right-color: #999999;
+            border-bottom-color: #999999;
+            height: 480px;
+            overflow-y: scroll;
+            padding: 10px;
+            width: 100%;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        #console p {
+            padding: 0;
+            margin: 2px 0;
+            font-size: 12px;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .connected {
+            color: green;
+        }
+
+        .disconnected {
+            color: red;
+        }
+
+        .join-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .join-btn:hover {
+            background-color: #45a049;
+        }
+
+        .join-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; color: #333;">Multiplayer Snake Game</h1>
+    
+    <div class="game-container">
+        <div class="game-area">
+            <div class="status" id="status">
+                <span class="disconnected">Connecting...</span>
+            </div>
+            <button class="join-btn" id="joinBtn" disabled>Join Game</button>
+            <canvas id="playground" width="640" height="480"></canvas>
+            <div class="controls">
+                <h3>Controls</h3>
+                <p>Arrow Keys: Move your snake</p>
+                <p>Avoid hitting other snakes and walls</p>
+                <p>Eat other snakes to grow longer</p>
+            </div>
+        </div>
+        
+        <div id="console-container">
+            <h3 style="margin-top: 0;">Game Log</h3>
+            <div id="console"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

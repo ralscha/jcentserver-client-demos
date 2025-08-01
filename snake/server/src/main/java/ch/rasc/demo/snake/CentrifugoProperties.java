@@ -1,4 +1,4 @@
-package ch.rasc.iss;
+package ch.rasc.demo.snake;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -2,20 +2,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>ch.rasc.demo</groupId>
+	<artifactId>poll</artifactId>
+	<version>0.0.1</version>
+
+	<name>poll</name>
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.0-M1</version>
 		<relativePath/>
 	</parent>
-	<groupId>ch.rasc</groupId>
-	<artifactId>iss</artifactId>
-	<version>0.0.1</version>
-	<name>iss</name>
-	<description>Demo project for Centrifugo</description>
+
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>24</java.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -23,32 +29,21 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-webflux</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>ch.rasc</groupId>
 			<artifactId>jcentserver-client</artifactId>
 			<version>1.0.0</version>		
-		</dependency>		
-
-		<dependency>
-		    <groupId>io.jsonwebtoken</groupId>
-		    <artifactId>jjwt-api</artifactId>
-		    <version>0.12.6</version>
 		</dependency>
 
 		<dependency>
-		    <groupId>io.jsonwebtoken</groupId>
-		    <artifactId>jjwt-impl</artifactId>
-		    <version>0.12.6</version>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>4.5.0</version>
 		</dependency>
 
 		<dependency>
-		    <groupId>io.jsonwebtoken</groupId>
-		    <artifactId>jjwt-jackson</artifactId>
-		    <version>0.12.6</version>
+		    <groupId>org.mapdb</groupId>
+		    <artifactId>mapdb</artifactId>
+		    <version>3.1.0</version>
 		</dependency>
 
 		<dependency>
@@ -64,12 +59,12 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>io.spring.javaformat</groupId>
 				<artifactId>spring-javaformat-maven-plugin</artifactId>
 				<version>0.0.47</version>
-			</plugin>			
+			</plugin>     
 		</plugins>
 	</build>
 

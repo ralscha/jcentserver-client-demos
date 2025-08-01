@@ -1,0 +1,19 @@
+{
+  "name": "snake",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "centrifuge": "5.4.0",
+    "uuid": "11.1.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.2",
+    "vite": "7.0.6"
+  }
+}
