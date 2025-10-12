@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "@types/google.maps": "3.58.1",
-    "typescript": "5.9.2",
-    "vite": "7.1.5"
+    "typescript": "5.9.3",
+    "vite": "7.1.9"
   },
   "dependencies": {
     "@maptiler/sdk": "3.7.0",
