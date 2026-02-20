@@ -11,10 +11,10 @@
   "devDependencies": {
     "@types/google.maps": "3.58.1",
     "typescript": "5.9.3",
-    "vite": "7.2.7"
+    "vite": "7.3.1"
   },
   "dependencies": {
-    "@maptiler/sdk": "3.7.0",
-    "centrifuge": "5.4.0"
+    "@maptiler/sdk": "3.11.1",
+    "centrifuge": "5.5.3"
   }
 }

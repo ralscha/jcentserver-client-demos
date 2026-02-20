@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "centrifuge": "5.4.0",
+    "centrifuge": "5.5.3",
     "echarts": "6.0.0",
     "muicss": "0.10.3",
-    "uuid": "11.1.0"
+    "uuid": "13.0.0"
   },
   "devDependencies": {
-    "vite": "7.2.7"
+    "vite": "7.3.1"
   }
 }
