@@ -4,7 +4,7 @@
       "hmac_secret_key": "bc33457f-c7f3-4ecf-840a-21f3b8274476"
     },
     "allowed_origins": [
-      "http://localhost:5173",
+      "http://localhost:4173",
 	  "http://localhost:3000"
     ]
   },
@@ -20,5 +20,11 @@
   },
   "http_api": {
     "key": "d0cee815-23b2-4036-98c7-df971d933606"
-  }
+  },
+  "http_stream": {
+    "enabled": true
+  },
+  "sse": {
+    "enabled": true
+  }  
 }

@@ -1,0 +1,52 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 1rem;
+}
+
+h2 {
+  margin-bottom: 0.5rem;
+}
+
+h4 {
+  margin: 1rem 0 0.3rem;
+}
+
+#peers {
+  width: 900px;
+  height: 400px;
+  border: 1px solid lightgray;
+}
+
+#messageTa {
+  padding: 0.3rem 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+#sendButton {
+  padding: 0.3rem 0.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  border: 1px solid #888;
+  border-radius: 3px;
+  background: #eee;
+}
+
+#sendButton:hover {
+  background: #ddd;
+}
+
+#output {
+  margin-top: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  padding: 0.5rem;
+  background: #fafafa;
+}
+
+#output p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+}

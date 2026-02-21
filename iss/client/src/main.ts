@@ -70,12 +70,12 @@ function transports(): TransportEndpoint[] {
     ];
 }
 
-function extractUserIdFromToken(token: string): string {
-    const payload = token.split('.')[1];
-    const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    const jsonPayload = JSON.parse(decodedPayload);
-    return jsonPayload.sub;
-}
+// function extractUserIdFromToken(token: string): string {
+//     const payload = token.split('.')[1];
+//     const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+//     const jsonPayload = JSON.parse(decodedPayload);
+//     return jsonPayload.sub;
+// }
 
 async function fetchCentrifugoToken(): Promise<string> {
     const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/centrifugo-token`);
@@ -86,19 +86,19 @@ async function fetchCentrifugoToken(): Promise<string> {
     return await response.text();
 }
 
-async function subscribe(userId: string): Promise<void> {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/subscribe`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({userId})
-    });
-    if (!response.ok) {
-        throw new Error(`Failed to subscribe: ${response.status} ${response.statusText}`);
-    }
-    return;
-}
+// async function subscribe(userId: string): Promise<void> {
+//     const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/subscribe`, {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({userId})
+//     });
+//     if (!response.ok) {
+//         throw new Error(`Failed to subscribe: ${response.status} ${response.statusText}`);
+//     }
+//     return;
+// }
 
 function updateMarker(map: maptilersdk.Map, position: { latitude: string, longitude: string }) {
     const lng = parseFloat(position.longitude);

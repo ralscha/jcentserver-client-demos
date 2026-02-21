@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Multi-Room Chat</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- Sign-in screen -->
+    <div id="signin-screen" class="screen">
+      <div class="signin-box">
+        <h2>Multi-Room Chat</h2>
+        <p id="signin-error" class="error hidden"></p>
+        <input id="username-input" type="text" maxlength="20" placeholder="Enter your nickname..." />
+        <button id="signin-btn">Sign In</button>
+      </div>
+    </div>
+
+    <!-- Chat screen -->
+    <div id="chat-screen" class="screen hidden">
+      <aside id="sidebar">
+        <div id="sidebar-header">
+          <span id="current-user"></span>
+          <button id="signout-btn" title="Sign out">⏻</button>
+        </div>
+        <div id="rooms-header">
+          <strong>Rooms</strong>
+          <button id="new-room-btn" title="Create new room">＋</button>
+        </div>
+        <ul id="room-list"></ul>
+      </aside>
+      <main id="chat-main">
+        <div id="no-room-msg">Select or create a room to start chatting.</div>
+        <div id="room-view" class="hidden">
+          <div id="room-title"></div>
+          <ul id="messages"></ul>
+          <div id="input-area">
+            <input id="message-input" type="text" placeholder="Type a message..." />
+            <button id="send-btn">Send</button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
