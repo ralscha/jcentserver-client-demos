@@ -11,7 +11,6 @@
   "dependencies": {
     "centrifuge": "5.5.3",
     "echarts": "6.0.0",
-    "muicss": "0.10.3",
     "uuid": "13.0.0"
   },
   "devDependencies": {

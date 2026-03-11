@@ -40,8 +40,7 @@ public class SnakeController {
 
 	private final CentrifugoServerApiClient centrifugoServerApiClient;
 
-	SnakeController(CentrifugoProperties centrifugoProperties,
-			CentrifugoServerApiClient centrifugoServerApiClient) {
+	SnakeController(CentrifugoProperties centrifugoProperties, CentrifugoServerApiClient centrifugoServerApiClient) {
 		this.centrifugoProperties = centrifugoProperties;
 		this.centrifugoServerApiClient = centrifugoServerApiClient;
 		this.algorithmHS = Algorithm.HMAC512(this.centrifugoProperties.hmacSecret());
@@ -89,8 +88,7 @@ public class SnakeController {
 
 	@GetMapping("/token")
 	public String token() {
-		return JWT.create().withSubject("snake").withClaim("channels", List.of("snake"))
-				.sign(this.algorithmHS);
+		return JWT.create().withSubject("snake").withClaim("channels", List.of("snake")).sign(this.algorithmHS);
 	}
 
 	@GetMapping("/test")
@@ -204,8 +202,7 @@ public class SnakeController {
 
 	private void publishToChannel(String channel, SnakeMessage message) {
 		try {
-			this.centrifugoServerApiClient.publication()
-					.publish(p -> p.channel(channel).data(message));
+			this.centrifugoServerApiClient.publication().publish(p -> p.channel(channel).data(message));
 		}
 		catch (Exception e) {
 			System.err.println("Failed to publish message: " + e.getMessage());

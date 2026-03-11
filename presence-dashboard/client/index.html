@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presence Dashboard</title>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Centrifugo presence</p>
+        <h1>Live Presence Dashboard</h1>
+        <p class="intro">Connect multiple tabs with the same or different names to compare active client count, unique users, and real-time join and leave events.</p>
+      </div>
+      <form id="signin-form" class="signin card">
+        <label>
+          <span>Name</span>
+          <input id="name-input" value="Operator 1" required />
+        </label>
+        <label>
+          <span>Role</span>
+          <input id="role-input" value="Commentator" required />
+        </label>
+        <label>
+          <span>Desk</span>
+          <input id="desk-input" value="Studio A" required />
+        </label>
+        <button class="primary" type="submit">Connect</button>
+      </form>
+    </section>
+
+    <section class="toolbar card">
+      <button id="refresh-btn">Refresh roster</button>
+      <button id="disconnect-btn">Disconnect</button>
+      <button id="reconnect-btn">Reconnect</button>
+      <span id="status-pill" class="status-pill">idle</span>
+    </section>
+
+    <section class="stats-grid">
+      <article class="card stat-card">
+        <span class="eyebrow">Clients</span>
+        <strong id="client-count">0</strong>
+      </article>
+      <article class="card stat-card">
+        <span class="eyebrow">Unique users</span>
+        <strong id="user-count">0</strong>
+      </article>
+      <article class="card stat-card">
+        <span class="eyebrow">Current room</span>
+        <strong>presence:lobby</strong>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="card roster-card">
+        <div class="section-head">
+          <h2>Online roster</h2>
+          <p>Data comes from Centrifugo presence APIs.</p>
+        </div>
+        <div id="roster" class="roster"></div>
+      </article>
+
+      <article class="card event-card">
+        <div class="section-head">
+          <h2>Join and leave feed</h2>
+          <p>Driven by Centrifugo join/leave pushes.</p>
+        </div>
+        <ul id="event-feed" class="event-feed"></ul>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

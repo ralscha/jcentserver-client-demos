@@ -24,18 +24,14 @@ public class CpuDataService {
 	public void sendData() {
 		Map<String, Object> data = new HashMap<>();
 		data.put("time", System.currentTimeMillis());
-		data.put("host1",
-				new double[] { this.random.nextDouble(), this.random.nextDouble(),
-						this.random.nextDouble(), this.random.nextDouble() });
-		data.put("host2",
-				new double[] { this.random.nextDouble(), this.random.nextDouble(),
-						this.random.nextDouble(), this.random.nextDouble() });
-		data.put("host3",
-				new double[] { this.random.nextDouble(), this.random.nextDouble(),
-						this.random.nextDouble(), this.random.nextDouble() });
-		data.put("host4",
-				new double[] { this.random.nextDouble(), this.random.nextDouble(),
-						this.random.nextDouble(), this.random.nextDouble() });
+		data.put("host1", new double[] { this.random.nextDouble(), this.random.nextDouble(), this.random.nextDouble(),
+				this.random.nextDouble() });
+		data.put("host2", new double[] { this.random.nextDouble(), this.random.nextDouble(), this.random.nextDouble(),
+				this.random.nextDouble() });
+		data.put("host3", new double[] { this.random.nextDouble(), this.random.nextDouble(), this.random.nextDouble(),
+				this.random.nextDouble() });
+		data.put("host4", new double[] { this.random.nextDouble(), this.random.nextDouble(), this.random.nextDouble(),
+				this.random.nextDouble() });
 
 		this.centrifugoServerApiClient.publication().publish(b -> b.channel("smoothie").data(data));
 	}

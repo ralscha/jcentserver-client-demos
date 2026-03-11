@@ -3,32 +3,73 @@
 <head>
     <title>Server Load Monitor</title>
     <style>
-        body {
-            background-color: #000000;
-            color: #eeeeee;
-            font-family: tahoma, arial, sans-serif;
-            padding: 20px;
+        :root {
+            color-scheme: dark;
         }
-        canvas {
-            display: block;
-            margin-bottom: 10px;
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #0f172a 0%, #020617 55%, #000000 100%);
+            color: #eeeeee;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            padding: 24px;
+        }
+        .layout {
+            margin: 0 auto;
+            max-width: 1180px;
+        }
+        .page-title {
+            margin: 0 0 8px;
+            font-size: 2rem;
+        }
+        .page-copy {
+            margin: 0 0 24px;
+            color: #94a3b8;
+        }
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        }
+        .panel {
+            padding: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 18px;
+            background: rgba(15, 23, 42, 0.88);
+            box-shadow: 0 22px 40px rgba(2, 6, 23, 0.35);
+        }
+        .chart {
+            height: 240px;
+            width: 100%;
+        }
+        .footnote {
+            margin-top: 18px;
+            color: #94a3b8;
         }
     </style>
 </head>
 <body>
-    <h4>host1.example.com</h4>
-    <canvas id="host1Cpu" width="500" height="100"></canvas>
+    <main class="layout">
+        <h1 class="page-title">Server Load Monitor</h1>
+        <p class="page-copy">Real-time CPU traces for four demo hosts. Data is simulated for the demo.</p>
 
-    <h4>host2.example.com</h4>
-    <canvas id="host2Cpu" width="500" height="100"></canvas>
+        <section class="grid">
+            <div class="panel">
+                <div id="host1Cpu" class="chart"></div>
+            </div>
+            <div class="panel">
+                <div id="host2Cpu" class="chart"></div>
+            </div>
+            <div class="panel">
+                <div id="host3Cpu" class="chart"></div>
+            </div>
+            <div class="panel">
+                <div id="host4Cpu" class="chart"></div>
+            </div>
+        </section>
 
-    <h4>host3.example.com</h4>
-    <canvas id="host3Cpu" width="500" height="100"></canvas>
-
-    <h4>host4.example.com</h4>
-    <canvas id="host4Cpu" width="500" height="100"></canvas>
-
-    <div style="margin-top:20px;">This is fake data.</div>
+        <div class="footnote">This is fake data.</div>
+    </main>
 
     <script type="module" src="/src/main.ts"></script>
 </body>

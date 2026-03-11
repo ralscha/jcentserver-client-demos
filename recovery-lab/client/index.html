@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recovery Lab</title>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">Centrifugo recovery</p>
+      <h1>Reconnect Lab</h1>
+      <p class="intro">This demo publishes a numbered event stream into a recoverable channel. Disconnect the client, create a burst of events, then reconnect and watch whether the stream resumes cleanly.</p>
+    </section>
+
+    <section class="controls card">
+      <button id="connect-btn" class="primary">Connect</button>
+      <button id="disconnect-btn">Disconnect</button>
+      <button id="burst-btn">Publish burst x12</button>
+      <button id="simulate-btn">Disconnect, burst, reconnect</button>
+      <button id="reset-server-btn">Reset sequence</button>
+      <button id="clear-log-btn">Clear log</button>
+    </section>
+
+    <section class="stats-grid">
+      <article class="card stat-card">
+        <span class="eyebrow">Connection</span>
+        <strong id="connection-state">idle</strong>
+      </article>
+      <article class="card stat-card">
+        <span class="eyebrow">Last sequence</span>
+        <strong id="last-seq">0</strong>
+      </article>
+      <article class="card stat-card">
+        <span class="eyebrow">Recovered subscribe events</span>
+        <strong id="recoveries">0</strong>
+      </article>
+      <article class="card stat-card">
+        <span class="eyebrow">Detected gaps</span>
+        <strong id="gaps">0</strong>
+      </article>
+    </section>
+
+    <section class="card timeline-card">
+      <div class="timeline-head">
+        <h2>Event timeline</h2>
+        <p id="timeline-summary">Waiting for connection.</p>
+      </div>
+      <ul id="timeline" class="timeline"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

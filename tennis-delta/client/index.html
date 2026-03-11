@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tennis Delta Compression</title>
+</head>
+<body>
+  <div id="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Centrifugo delta compression</p>
+        <h1>Live Tennis Match Center</h1>
+        <p class="lede">Two Centrifuge connections consume the same full match-state feed. One subscribes normally, one negotiates <code>delta: "fossil"</code>.</p>
+      </div>
+      <div class="hero-actions">
+        <button id="next-point-btn" class="primary">Play next point</button>
+        <button id="autoplay-btn">Pause autoplay</button>
+        <button id="reset-match-btn">Reset match</button>
+        <button id="reset-meters-btn">Reset counters</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel scoreboard-panel">
+        <div class="score-header">
+          <div>
+            <p id="tournament-name" class="label">Grand Tour Finals</p>
+            <h2 id="court-name">Centre Court</h2>
+          </div>
+          <div class="clock-box">
+            <span id="clock-elapsed">00:00</span>
+            <small id="clock-shot">Shot clock 25</small>
+          </div>
+        </div>
+
+        <div class="players">
+          <article class="player-card">
+            <div>
+              <p id="player-a-country" class="label">SUI</p>
+              <h3 id="player-a-name">Mira Kovac</h3>
+            </div>
+            <div class="scoreline">
+              <span id="player-a-sets">0</span>
+              <span id="player-a-games">0</span>
+              <span id="player-a-points">0</span>
+            </div>
+          </article>
+
+          <article class="player-card accent">
+            <div>
+              <p id="player-b-country" class="label">ESP</p>
+              <h3 id="player-b-name">Ana Torres</h3>
+            </div>
+            <div class="scoreline">
+              <span id="player-b-sets">0</span>
+              <span id="player-b-games">0</span>
+              <span id="player-b-points">0</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="status-strip">
+          <span id="server-indicator" class="pill">Serving: Mira Kovac</span>
+          <span id="pressure-indicator" class="pill muted">No immediate pressure point</span>
+          <span id="winner-indicator" class="pill muted">Match in progress</span>
+        </div>
+      </section>
+
+      <section class="panel compare-panel">
+        <div class="compare-head">
+          <h2>Inbound wire comparison</h2>
+          <p>Each card counts raw bytes received by its own WebSocket connection after subscription starts.</p>
+        </div>
+        <div class="compare-grid">
+          <article class="meter-card">
+            <p class="label">Plain subscription</p>
+            <h3 id="plain-bytes">0 B</h3>
+            <p id="plain-frames">0 frames</p>
+            <p id="plain-last">Last frame 0 B</p>
+          </article>
+          <article class="meter-card delta">
+            <p class="label">Delta subscription</p>
+            <h3 id="delta-bytes">0 B</h3>
+            <p id="delta-frames">0 frames</p>
+            <p id="delta-last">Last frame 0 B</p>
+          </article>
+          <article class="meter-card summary">
+            <p class="label">Reduction</p>
+            <h3 id="reduction-value">0%</h3>
+            <p id="payload-estimate">Server payload 0 B</p>
+            <p>Open browser network tools to inspect the raw frame bodies as well.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel lower-grid">
+        <div>
+          <h2>Match pulse</h2>
+          <div class="stat-grid" id="stat-grid"></div>
+        </div>
+        <div>
+          <h2>Latest events</h2>
+          <ul id="event-log" class="event-log"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

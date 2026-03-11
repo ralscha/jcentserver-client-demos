@@ -6,16 +6,24 @@ import {Centrifuge} from 'centrifuge';
 import './main.css';
 
 echarts.use([PieChart, TooltipComponent, TitleComponent, CanvasRenderer]);
-const oss = ["Windows", "macOS", "Linux", "Other"];
+const oss = ['Windows', 'macOS', 'Linux', 'Other'];
 
+function getRequiredElement(id) {
+  const element = document.getElementById(id);
+  if (!element) {
+    throw new Error(`Missing required element: ${id}`);
+  }
+  return element;
+}
 
 function drawChart(data, chart) {
   const pollData = data.split(',').map(Number);
-  const total = pollData.reduce((accumulator, currentValue) => accumulator + currentValue);
+  const total = pollData.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
 
   chart.setOption({
     title: {
-      text: `Total Votes: ${total}`
+      text: `Total Votes: ${total}`,
+      left: 'center'
     },
     series: {
       data: [
@@ -46,42 +54,51 @@ function transports() {
 }
 
 export async function init() {
-
-  const response = await fetch('http://localhost:8080/token');
+  const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/token`);
   const token = await response.text();
 
-  const alreadyVoted = localStorage.getItem('hasVoted');
-  document.getElementById('hasVotedAlreadyErrorMsg').classList.toggle('hidden', !alreadyVoted);
-  document.getElementById('vote-form').classList.toggle('hidden', alreadyVoted === 'true');
+  const votedMessage = getRequiredElement('voted');
+  const alreadyVotedMessage = getRequiredElement('hasVotedAlreadyErrorMsg');
+  const voteForm = getRequiredElement('vote-form');
+  const voteButton = getRequiredElement('vote-button');
+  const chartElement = getRequiredElement('chart');
+  const alreadyVoted = localStorage.getItem('hasVoted') === 'true';
 
-  const voteButton = document.getElementById('vote-button');
+  alreadyVotedMessage.classList.toggle('hidden', !alreadyVoted);
+  voteForm.classList.toggle('hidden', alreadyVoted);
 
   voteButton.addEventListener('click', () => {
-    localStorage.setItem('hasVoted', "true")
-    const choice = document.querySelector('input[name=os]:checked').value;
+    const choice = document.querySelector('input[name=os]:checked')?.value;
+    if (!choice) {
+      return;
+    }
+
+    localStorage.setItem('hasVoted', 'true');
 
     fetch(`${import.meta.env.VITE_SERVER_URL}/poll`, {
       method: 'POST',
       body: choice
     }).then(() => {
-      document.getElementById('voted').classList.remove('hidden');
-      document.getElementById('hasVotedAlreadyErrorMsg').classList.add('hidden');
-      document.getElementById('vote-form').classList.add('hidden');
-    }).catch((e) => console.log(e));
+      votedMessage.classList.remove('hidden');
+      alreadyVotedMessage.classList.add('hidden');
+      voteForm.classList.add('hidden');
+    }).catch((error) => console.error(error));
   });
 
-  const chart = echarts.init(document.getElementById('chart'));
+  const chart = echarts.init(chartElement);
   chart.setOption(getChartOption());
+  window.addEventListener('resize', () => chart.resize());
 
   const pollResponse = await fetch(`${import.meta.env.VITE_SERVER_URL}/poll`);
   const pollData = await pollResponse.text();
   drawChart(pollData, chart);
 
   const centrifuge = new Centrifuge(transports(), {token});
-  centrifuge.on('publication', function (ctx) {
-    console.log(ctx);
-    const data = ctx.data.result;
-    drawChart(data, chart);
+  centrifuge.on('publication', (ctx) => {
+    const data = ctx.data?.result;
+    if (typeof data === 'string') {
+      drawChart(data, chart);
+    }
   });
   centrifuge.connect();
 }
@@ -90,11 +107,11 @@ function getChartOption() {
   return {
     title: {
       text: 'Votes',
-      x: 'center'
+      left: 'center'
     },
     tooltip: {
       trigger: 'item',
-      formatter: "{b} : {c} ({d}%)"
+      formatter: '{b} : {c} ({d}%)'
     },
     series: [
       {

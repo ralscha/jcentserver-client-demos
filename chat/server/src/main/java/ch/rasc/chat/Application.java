@@ -38,8 +38,7 @@ public class Application {
 	@Bean
 	CentrifugoServerApiClient centrifugoConfig(CentrifugoProperties centrifugoProperties) {
 		return CentrifugoServerApiClient
-			.create(cfg -> cfg.apiKey(centrifugoProperties.apiKey())
-				.baseUrl(centrifugoProperties.apiBaseUrl()));
+			.create(cfg -> cfg.apiKey(centrifugoProperties.apiKey()).baseUrl(centrifugoProperties.apiBaseUrl()));
 	}
 
 }

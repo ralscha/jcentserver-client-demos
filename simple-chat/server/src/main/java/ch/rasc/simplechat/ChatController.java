@@ -1,7 +1,5 @@
 package ch.rasc.simplechat;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -12,21 +10,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 
 @RestController
 public class ChatController {
 
-	private final Key centrifugoHmacShaKey;
+	private final Algorithm algorithmHS;
 
 	private final CentrifugoServerApiClient centrifugoServerApiClient;
 
-	public ChatController(CentrifugoProperties centrifugoConfig,
-			CentrifugoServerApiClient centrifugoServerApiClient) {
-		this.centrifugoHmacShaKey = Keys
-			.hmacShaKeyFor(centrifugoConfig.hmacSecret().getBytes(StandardCharsets.UTF_8));
+	public ChatController(CentrifugoProperties centrifugoConfig, CentrifugoServerApiClient centrifugoServerApiClient) {
+		this.algorithmHS = Algorithm.HMAC512(centrifugoConfig.hmacSecret());
 		this.centrifugoServerApiClient = centrifugoServerApiClient;
 	}
 
@@ -34,7 +30,7 @@ public class ChatController {
 	@ResponseBody
 	public String token() {
 		String userId = UUID.randomUUID().toString();
-		return Jwts.builder().subject(userId).signWith(this.centrifugoHmacShaKey).compact();
+		return JWT.create().withSubject(userId).sign(this.algorithmHS);
 	}
 
 	record ChatMessage(String id, String text, String sentAt) {

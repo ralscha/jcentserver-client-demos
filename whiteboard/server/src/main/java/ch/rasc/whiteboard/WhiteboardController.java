@@ -17,8 +17,7 @@ public class WhiteboardController {
 
 	@PostMapping("/drawing")
 	public void drawing(@RequestBody DrawingMessage msg) {
-		this.centrifugoServerApiClient.publication()
-			.publish(b -> b.channel("drawing").data(msg));
+		this.centrifugoServerApiClient.publication().publish(b -> b.channel("drawing").data(msg));
 	}
 
 }

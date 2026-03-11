@@ -5,13 +5,43 @@
     },
     "allowed_origins": [
       "http://localhost:4173",
-	  "http://localhost:3000"
+      "http://localhost:5173"
     ]
   },
   "channel": {
     "without_namespace": {
       "allow_subscribe_for_client": true
-    }
+    },
+    "namespaces": [
+      {
+        "name": "tennis",
+        "allow_subscribe_for_client": true,
+        "history_size": 8,
+        "history_ttl": "10m",
+        "force_positioning": true,
+        "allowed_delta_types": [
+          "fossil"
+        ],
+        "delta_publish": true
+      },
+      {
+        "name": "recovery",
+        "allow_subscribe_for_client": true,
+        "history_size": 300,
+        "history_ttl": "10m",
+        "force_positioning": true,
+        "force_recovery": true
+      },
+      {
+        "name": "presence",
+        "allow_subscribe_for_client": true,
+        "allow_presence_for_client": true,
+        "allow_presence_for_subscriber": true,
+        "presence": true,
+        "join_leave": true,
+        "force_push_join_leave": true
+      }
+    ]
   },
   "admin": {
     "enabled": true,
@@ -26,5 +56,5 @@
   },
   "sse": {
     "enabled": true
-  }  
+  }
 }

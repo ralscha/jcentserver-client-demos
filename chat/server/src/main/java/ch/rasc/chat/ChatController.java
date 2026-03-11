@@ -1,7 +1,5 @@
 package ch.rasc.chat;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,19 +15,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
 import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 
 @RestController
 public class ChatController {
 
 	private final CentrifugoServerApiClient centrifugoServerApiClient;
 
-	private final Key centrifugoHmacShaKey;
+	private final Algorithm algorithmHS;
 
 	// Room names
 	private final Set<String> rooms = ConcurrentHashMap.newKeySet();
@@ -43,8 +41,7 @@ public class ChatController {
 	public ChatController(CentrifugoServerApiClient centrifugoServerApiClient,
 			CentrifugoProperties centrifugoProperties) {
 		this.centrifugoServerApiClient = centrifugoServerApiClient;
-		this.centrifugoHmacShaKey = Keys
-			.hmacShaKeyFor(centrifugoProperties.hmacSecret().getBytes(StandardCharsets.UTF_8));
+		this.algorithmHS = Algorithm.HMAC512(centrifugoProperties.hmacSecret());
 	}
 
 	/**
@@ -58,10 +55,7 @@ public class ChatController {
 		}
 		this.signedInUsers.add(request.username());
 
-		String token = Jwts.builder()
-			.subject(request.username())
-			.signWith(this.centrifugoHmacShaKey)
-			.compact();
+		String token = JWT.create().withSubject(request.username()).sign(this.algorithmHS);
 
 		return Map.of("token", token, "rooms", new ArrayList<>(this.rooms));
 	}
@@ -86,7 +80,8 @@ public class ChatController {
 	}
 
 	/**
-	 * Join a room. Returns existing messages. Broadcasts join message to the room channel.
+	 * Join a room. Returns existing messages. Broadcasts join message to the room
+	 * channel.
 	 */
 	@PostMapping("/join-room")
 	public List<ChatMessage> joinRoom(@RequestBody JoinRoomRequest request) {
@@ -134,19 +129,16 @@ public class ChatController {
 	}
 
 	private void storeMessage(String room, ChatMessage message) {
-		this.roomMessages.computeIfAbsent(room,
-				k -> Caffeine.newBuilder().expireAfterWrite(6, TimeUnit.HOURS).maximumSize(100).build())
+		this.roomMessages
+			.computeIfAbsent(room,
+					k -> Caffeine.newBuilder().expireAfterWrite(6, TimeUnit.HOURS).maximumSize(100).build())
 			.put(message.sendDate(), message);
 	}
 
 	private List<ChatMessage> getMessages(String room) {
 		Cache<Long, ChatMessage> cache = this.roomMessages.get(room);
 		if (cache != null) {
-			return cache.asMap()
-				.values()
-				.stream()
-				.sorted(Comparator.comparing(ChatMessage::sendDate))
-				.toList();
+			return cache.asMap().values().stream().sorted(Comparator.comparing(ChatMessage::sendDate)).toList();
 		}
 		return Collections.emptyList();
 	}

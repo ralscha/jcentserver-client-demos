@@ -57,8 +57,7 @@ public class DataChannelController {
 
 		Map<String, Object> data = Map.of("event", "peer.disconnected", "id", clientId);
 		for (String peerId : this.connectedClients) {
-			this.centrifugoServerApiClient.publication()
-				.publish(b -> b.channel("peer." + peerId).data(data));
+			this.centrifugoServerApiClient.publication().publish(b -> b.channel("peer." + peerId).data(data));
 		}
 	}
 
@@ -69,8 +68,7 @@ public class DataChannelController {
 	public void offer(@RequestBody SignalingMessage request) {
 		Map<String, Object> data = Map.of("event", "offer", "receiver", request.receiver(), "id", request.id(),
 				"localDescription", request.localDescription());
-		this.centrifugoServerApiClient.publication()
-			.publish(b -> b.channel("peer." + request.receiver()).data(data));
+		this.centrifugoServerApiClient.publication().publish(b -> b.channel("peer." + request.receiver()).data(data));
 	}
 
 	/**
@@ -80,8 +78,7 @@ public class DataChannelController {
 	public void answer(@RequestBody SignalingMessage request) {
 		Map<String, Object> data = Map.of("event", "answer", "receiver", request.receiver(), "id", request.id(),
 				"localDescription", request.localDescription());
-		this.centrifugoServerApiClient.publication()
-			.publish(b -> b.channel("peer." + request.receiver()).data(data));
+		this.centrifugoServerApiClient.publication().publish(b -> b.channel("peer." + request.receiver()).data(data));
 	}
 
 	/**
@@ -91,8 +88,7 @@ public class DataChannelController {
 	public void ice(@RequestBody IceMessage request) {
 		Map<String, Object> data = Map.of("event", "ice", "receiver", request.receiver(), "id", request.id(),
 				"candidate", request.candidate());
-		this.centrifugoServerApiClient.publication()
-			.publish(b -> b.channel("peer." + request.receiver()).data(data));
+		this.centrifugoServerApiClient.publication().publish(b -> b.channel("peer." + request.receiver()).data(data));
 	}
 
 }

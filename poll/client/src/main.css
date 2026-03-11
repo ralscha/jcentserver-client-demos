@@ -1,9 +1,164 @@
-@import '../node_modules/muicss/dist/css/mui.min.css';
-
 body {
-  font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, serif;
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(16, 185, 129, 0.2), transparent 35%),
+    linear-gradient(180deg, #f8fafc 0%, #ecfeff 100%);
+  color: #0f172a;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .hidden {
   display: none;
+}
+
+.page {
+  margin: 0 auto;
+  max-width: 1100px;
+  padding: 32px 20px 48px;
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #0f766e;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.hero p {
+  margin: 10px 0 0;
+  max-width: 48rem;
+  color: #334155;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.content {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(280px, 360px) minmax(320px, 1fr);
+  align-items: start;
+}
+
+.card {
+  border: 1px solid rgba(15, 118, 110, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.vote-card,
+.chart-card {
+  padding: 24px;
+}
+
+.vote-card h2,
+.chart-card h2 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+}
+
+.vote-card p,
+.chart-card p {
+  margin: 0 0 18px;
+  color: #475569;
+}
+
+.feedback {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.feedback-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.feedback-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.vote-form {
+  display: grid;
+  gap: 12px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.option:hover {
+  border-color: #14b8a6;
+  box-shadow: 0 12px 25px rgba(20, 184, 166, 0.12);
+  transform: translateY(-1px);
+}
+
+.option input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #0f766e;
+}
+
+.option label {
+  flex: 1;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary-button {
+  margin-top: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 14px 20px;
+}
+
+.primary-button:hover {
+  filter: brightness(1.05);
+}
+
+#chart {
+  width: 100%;
+  height: 420px;
+}
+
+@media (max-width: 840px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .page {
+    padding: 24px 16px 32px;
+  }
+
+  #chart {
+    height: 320px;
+  }
 }
