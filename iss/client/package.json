@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
     "@types/google.maps": "3.58.1",
     "typescript": "5.9.3",
-    "vite": "7.3.1"
+    "vite": "8.0.0"
   },
   "dependencies": {
     "@maptiler/sdk": "3.11.1",
