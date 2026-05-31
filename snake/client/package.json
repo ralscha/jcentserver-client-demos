@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "centrifuge": "5.5.3",
+    "centrifuge": "5.6.0",
     "uuid": "14.0.0"
   },
   "devDependencies": {
     "typescript": "5.9.3",
-    "vite": "8.0.10"
+    "vite": "8.0.14"
   }
 }
