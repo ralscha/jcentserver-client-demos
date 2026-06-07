@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "typescript": "5.9.3",
-    "vite": "8.0.14"
+    "vite": "8.0.16"
   },
   "dependencies": {
     "centrifuge": "5.6.0"
