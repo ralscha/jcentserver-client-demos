@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/google.maps": "3.65.1",
+    "@types/google.maps": "3.65.2",
     "typescript": "6.0.3",
-    "vite": "8.0.16"
+    "vite": "8.1.0"
   },
   "dependencies": {
     "@maptiler/sdk": "4.0.2",

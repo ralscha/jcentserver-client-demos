@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "centrifuge": "5.7.0",
-    "uuid": "14.0.0"
+    "uuid": "14.0.1"
   },
   "devDependencies": {
     "typescript": "6.0.3",
-    "vite": "8.0.16"
+    "vite": "8.1.0"
   }
 }
