@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shared Poll Votes</title>
+</head>
+<body>
+  <main class="shell">
+    <section class="mast">
+      <div>
+        <p class="eyebrow">Centrifugo 6.8 shared poll</p>
+        <h1>Tracked Vote Cards</h1>
+      </div>
+      <div class="status">
+        <span id="connection-state">idle</span>
+        <strong id="tracked-count">0 tracked</strong>
+      </div>
+    </section>
+
+    <section id="cards" class="cards"></section>
+
+    <section class="activity">
+      <h2>Updates</h2>
+      <ul id="updates"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

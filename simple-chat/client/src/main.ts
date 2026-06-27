@@ -1,5 +1,8 @@
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 
+const serverUrl = 'http://localhost:8080';
+const centrifugoBase = 'localhost:8000';
+
 interface ChatMessage {
     id: string;
     text: string;
@@ -12,9 +15,9 @@ const sentMessages = new Set<string>();
 
 function transports(): TransportEndpoint[] {
     return [
-        {transport: 'websocket', endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`},
-        {transport: 'http_stream', endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`},
-        {transport: 'sse', endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`}
+        {transport: 'websocket', endpoint: `ws://${centrifugoBase}/connection/websocket`},
+        {transport: 'http_stream', endpoint: `http://${centrifugoBase}/connection/http_stream`},
+        {transport: 'sse', endpoint: `http://${centrifugoBase}/connection/sse`}
     ];
 }
 
@@ -35,7 +38,7 @@ async function sendMessage() {
 
         sentMessages.add(message.id);
 
-        await fetch(`${import.meta.env.VITE_SERVER_URL}/chat`, {
+        await fetch(`${serverUrl}/chat`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(message)
@@ -46,7 +49,7 @@ async function sendMessage() {
 }
 
 async function main() {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/centrifugo-token`);
+    const response = await fetch(`${serverUrl}/centrifugo-token`);
     const token = await response.text();
 
     const centrifuge = new Centrifuge(transports(), {token});

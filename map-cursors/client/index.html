@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Map Cursors</title>
+</head>
+<body>
+  <main class="shell">
+    <section class="topbar">
+      <div>
+        <p class="eyebrow">Centrifugo 6.8 map subscription</p>
+        <h1>Map Cursors</h1>
+      </div>
+      <div class="status">
+        <span id="connection-state">idle</span>
+        <strong id="cursor-count">0 cursors</strong>
+      </div>
+    </section>
+
+    <section id="stage" class="stage">
+      <div class="grid"></div>
+      <div id="hint" class="hint">Move the pointer across this area.</div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

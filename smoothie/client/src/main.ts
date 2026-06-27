@@ -4,6 +4,9 @@ import {GridComponent, LegendComponent, TitleComponent, TooltipComponent} from '
 import {CanvasRenderer} from 'echarts/renderers';
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 
+const serverUrl = 'http://localhost:8080';
+const centrifugoBase = 'localhost:8000';
+
 echarts.use([LineChart, GridComponent, LegendComponent, TitleComponent, TooltipComponent, CanvasRenderer]);
 
 type HostId = 'host1' | 'host2' | 'host3' | 'host4';
@@ -150,9 +153,9 @@ function addDataToDataSets(time: number, serverData: number[], dataSets: MetricP
 
 function transports(): TransportEndpoint[] {
     return [
-        {transport: 'websocket', endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`},
-        {transport: 'http_stream', endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`},
-        {transport: 'sse', endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`}
+        {transport: 'websocket', endpoint: `ws://${centrifugoBase}/connection/websocket`},
+        {transport: 'http_stream', endpoint: `http://${centrifugoBase}/connection/http_stream`},
+        {transport: 'sse', endpoint: `http://${centrifugoBase}/connection/sse`}
     ];
 }
 
@@ -168,7 +171,7 @@ async function main() {
         }
     });
 
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/centrifugo-token`);
+    const response = await fetch(`${serverUrl}/centrifugo-token`);
     const token = await response.text();
 
     const centrifuge = new Centrifuge(transports(), {token});

@@ -1,6 +1,9 @@
 import * as echarts from 'echarts';
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 
+const serverUrl = 'http://localhost:8080';
+const centrifugoBase = 'localhost:8000';
+
 const names = ['s1', 's2', 's3', 's4', 's5'];
 const thresholds = [0.1, 0.2, 0.7, 0.5, 0.9];
 const gauges: echarts.ECharts[] = [];
@@ -42,9 +45,9 @@ function getChartOption(name: string, threshold: number): echarts.EChartsCoreOpt
 
 function transports(): TransportEndpoint[] {
     return [
-        {transport: 'websocket', endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`},
-        {transport: 'http_stream', endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`},
-        {transport: 'sse', endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`}
+        {transport: 'websocket', endpoint: `ws://${centrifugoBase}/connection/websocket`},
+        {transport: 'http_stream', endpoint: `http://${centrifugoBase}/connection/http_stream`},
+        {transport: 'sse', endpoint: `http://${centrifugoBase}/connection/sse`}
     ];
 }
 
@@ -55,7 +58,7 @@ async function main() {
         gauges.push(chart);
     }
 
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/centrifugo-token`);
+    const response = await fetch(`${serverUrl}/centrifugo-token`);
     const token = await response.text();
 
     const centrifuge = new Centrifuge(transports(), {token});

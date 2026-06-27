@@ -1,0 +1,151 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #18202f;
+  background: #f3f5f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 28px 0;
+}
+
+.mast {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #66748c;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4.4rem);
+}
+
+.status {
+  display: flex;
+  gap: 10px;
+}
+
+.status span,
+.status strong {
+  border: 1px solid #d2dae7;
+  border-radius: 6px;
+  background: white;
+  padding: 9px 11px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  min-height: 230px;
+  border: 1px solid #dce3ef;
+  border-radius: 8px;
+  background: white;
+  padding: 18px;
+  box-shadow: 0 12px 30px #1c2a3f12;
+}
+
+.card.tracked {
+  border-color: #2f7a66;
+  box-shadow: 0 16px 34px #2f7a6620;
+}
+
+.card span {
+  color: #697890;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.76rem;
+}
+
+.card h2 {
+  margin: 8px 0 0;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.card strong {
+  font-size: 3rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+button {
+  border: 0;
+  border-radius: 6px;
+  background: #273449;
+  color: white;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+label {
+  color: #354157;
+  font-weight: 700;
+}
+
+.activity {
+  margin-top: 18px;
+  border-top: 1px solid #dce3ef;
+  padding-top: 16px;
+}
+
+.activity h2 {
+  margin: 0 0 10px;
+}
+
+.activity ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.activity li {
+  border-left: 4px solid #2f7a66;
+  background: white;
+  padding: 9px 11px;
+}
+
+.activity span {
+  display: inline-block;
+  min-width: 90px;
+  color: #697890;
+}
+
+@media (max-width: 720px) {
+  .mast {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

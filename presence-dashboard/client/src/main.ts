@@ -15,8 +15,8 @@ type PresenceInfo = {
   connInfo?: Record<string, unknown>;
 };
 
-const serverUrl = import.meta.env.VITE_SERVER_URL as string;
-const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS as string;
+const serverUrl = 'http://localhost:8093';
+const centrifugoBase = 'localhost:8000';
 
 let currentIdentity: SigninPayload | null = null;
 let centrifuge: Centrifuge | null = null;

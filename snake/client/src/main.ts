@@ -1,6 +1,9 @@
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 import {v4 as uuidv4} from 'uuid';
 
+const serverUrl = 'http://localhost:8080';
+const centrifugoBase = 'localhost:8000';
+
 interface Location {
     x: number;
     y: number;
@@ -97,7 +100,7 @@ class Game {
         this.direction = direction;
 
         // Send direction change to server
-        fetch(`${import.meta.env.VITE_SERVER_URL}/direction`, {
+        fetch(`${serverUrl}/direction`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +116,7 @@ class Game {
 
     async joinGame(): Promise<void> {
         try {
-            const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/join`, {
+            const response = await fetch(`${serverUrl}/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -138,7 +141,7 @@ class Game {
     async leaveGame(): Promise<void> {
         if (this.hasJoined) {
             try {
-                await fetch(`${import.meta.env.VITE_SERVER_URL}/leave`, {
+                await fetch(`${serverUrl}/leave`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -206,15 +209,15 @@ class Game {
         return [
             {
                 transport: 'websocket',
-                endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`
+                endpoint: `ws://${centrifugoBase}/connection/websocket`
             },
             {
                 transport: 'http_stream',
-                endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`
+                endpoint: `http://${centrifugoBase}/connection/http_stream`
             },
             {
                 transport: 'sse',
-                endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`
+                endpoint: `http://${centrifugoBase}/connection/sse`
             }
         ];
     }
@@ -222,7 +225,7 @@ class Game {
     async connect(): Promise<void> {
         try {
             // Get JWT token from server
-            const tokenResponse = await fetch(`${import.meta.env.VITE_SERVER_URL}/token`);
+            const tokenResponse = await fetch(`${serverUrl}/token`);
             const token = await tokenResponse.text();
 
             this.centrifuge = new Centrifuge(this.transports(), {

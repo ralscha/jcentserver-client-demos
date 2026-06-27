@@ -51,8 +51,8 @@ interface MeterState {
   lastFrameBytes: number;
 }
 
-const serverUrl = import.meta.env.VITE_SERVER_URL as string;
-const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS as string;
+const serverUrl = 'http://localhost:8091';
+const centrifugoBase = 'localhost:8000';
 
 const textEncoder = new TextEncoder();
 const wsHooks: Array<(bytes: number) => void> = [];

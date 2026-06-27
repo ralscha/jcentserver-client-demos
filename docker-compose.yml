@@ -1,7 +1,27 @@
 services:
+  postgres:
+    container_name: centrifugo-postgres18
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: centrifugo
+      POSTGRES_USER: centrifugo
+      POSTGRES_PASSWORD: centrifugo
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres18-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U centrifugo -d centrifugo"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   centrifugo:
     container_name: centrifugo6
-    image: centrifugo/centrifugo:v6
+    image: centrifugo/centrifugo:v6.8.3
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./config.json:/centrifugo/config.json
     command: centrifugo -c config.json
@@ -11,3 +31,6 @@ services:
       nofile:
         soft: 65535
         hard: 65535
+
+volumes:
+  postgres18-data:

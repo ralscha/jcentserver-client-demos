@@ -1,7 +1,8 @@
 import { Centrifuge, TransportEndpoint } from 'centrifuge';
 import './style.css';
 
-const serverUrl = import.meta.env.VITE_SERVER_URL as string;
+const serverUrl = 'http://localhost:8080';
+const centrifugoBase = 'localhost:8000';
 
 interface DrawingMessage {
   x0: number;
@@ -118,15 +119,15 @@ function transports(): TransportEndpoint[] {
   return [
     {
       transport: 'websocket',
-      endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`,
+      endpoint: `ws://${centrifugoBase}/connection/websocket`,
     },
     {
       transport: 'http_stream',
-      endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`,
+      endpoint: `http://${centrifugoBase}/connection/http_stream`,
     },
     {
       transport: 'sse',
-      endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`,
+      endpoint: `http://${centrifugoBase}/connection/sse`,
     },
   ];
 }

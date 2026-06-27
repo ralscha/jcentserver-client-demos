@@ -8,14 +8,74 @@
       "http://localhost:4174",
       "http://localhost:4175",
       "http://localhost:4176",
+      "http://localhost:4177",
+      "http://localhost:4178",
+      "http://localhost:4179",
       "http://localhost:5173"
     ]
   },
+  "broker": {
+    "enabled": true,
+    "type": "postgres",
+    "postgres": {
+      "dsn": "postgres://centrifugo:centrifugo@postgres:5432/centrifugo?sslmode=disable",
+      "use_notify": true
+    }
+  },
+  "controller": {
+    "enabled": true,
+    "type": "postgres",
+    "postgres": {
+      "dsn": "postgres://centrifugo:centrifugo@postgres:5432/centrifugo?sslmode=disable",
+      "use_notify": true
+    }
+  },
+  "shared_poll": {
+    "hmac_secret_key": "a6d47c78-a894-49b2-ad75-dc46c8c09f31"
+  },
   "channel": {
+    "proxy": {
+      "shared_poll_refresh": {
+        "endpoint": "http://host.docker.internal:8095/centrifugo/refresh",
+        "timeout": "5s"
+      }
+    },
     "without_namespace": {
       "allow_subscribe_for_client": true
     },
     "namespaces": [
+      {
+        "name": "pg_orders",
+        "allow_subscribe_for_client": true,
+        "history_size": 100,
+        "history_ttl": "10m",
+        "force_positioning": true,
+        "force_recovery": true
+      },
+      {
+        "name": "cursors",
+        "subscription_type": "map",
+        "map": {
+          "mode": "ephemeral",
+          "key_ttl": "20s",
+          "remove_client_on_unsubscribe": true,
+          "allow_publish_for_subscriber": true,
+          "client_key": "client_id"
+        },
+        "publication_data_format": "json_object",
+        "allow_subscribe_for_client": true
+      },
+      {
+        "name": "post_votes",
+        "subscription_type": "shared_poll",
+        "shared_poll": {
+          "mode": "versioned",
+          "refresh_interval": "2s",
+          "max_keys_per_connection": 20,
+          "publish_enabled": true
+        },
+        "allow_subscribe_for_client": true
+      },
       {
         "name": "tennis",
         "allow_subscribe_for_client": true,

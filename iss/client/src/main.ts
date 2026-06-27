@@ -3,6 +3,9 @@ import {Centrifuge, TransportEndpoint} from 'centrifuge';
 import * as maptilersdk from '@maptiler/sdk';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
+const serverUrl = 'http://localhost:8080';
+const centrifugoBase = 'localhost:8000';
+
 maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
 
 let centered = false;
@@ -57,15 +60,15 @@ function transports(): TransportEndpoint[] {
     return [
         {
             transport: 'websocket',
-            endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`
+            endpoint: `ws://${centrifugoBase}/connection/websocket`
         },
         {
             transport: 'http_stream',
-            endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`
+            endpoint: `http://${centrifugoBase}/connection/http_stream`
         },
         {
             transport: 'sse',
-            endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`
+            endpoint: `http://${centrifugoBase}/connection/sse`
         }
     ];
 }
@@ -78,7 +81,7 @@ function transports(): TransportEndpoint[] {
 // }
 
 async function fetchCentrifugoToken(): Promise<string> {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/centrifugo-token`);
+    const response = await fetch(`${serverUrl}/centrifugo-token`);
     if (!response.ok) {
         throw new Error(`Failed to fetch centrifugo token: ${response.status} ${response.statusText}`);
     }
@@ -87,7 +90,7 @@ async function fetchCentrifugoToken(): Promise<string> {
 }
 
 // async function subscribe(userId: string): Promise<void> {
-//     const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/subscribe`, {
+//     const response = await fetch(`${serverUrl}/subscribe`, {
 //         method: 'POST',
 //         headers: {
 //             'Content-Type': 'application/json'
@@ -157,4 +160,3 @@ function updateMarker(map: maptilersdk.Map, position: { latitude: string, longit
 }
 
 main().catch(console.error)
-

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Postgres Stream Orders</title>
+</head>
+<body>
+  <main class="shell">
+    <section class="mast">
+      <div>
+        <p class="eyebrow">Centrifugo 6.8 PostgreSQL stream broker</p>
+        <h1>Kitchen Orders</h1>
+      </div>
+      <div class="status">
+        <span id="connection-state">idle</span>
+        <strong id="stream-position">offset 0</strong>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <select id="item-input">
+        <option>Margherita pizza</option>
+        <option>Miso ramen</option>
+        <option>Falafel bowl</option>
+        <option>Paneer tikka</option>
+        <option>Club sandwich</option>
+      </select>
+      <select id="station-input">
+        <option>hot line</option>
+        <option>cold line</option>
+        <option>bakery</option>
+        <option>drinks</option>
+      </select>
+      <button id="create-btn">Create order</button>
+      <button id="reload-btn">Reload state</button>
+    </section>
+
+    <section id="orders" class="orders"></section>
+
+    <section class="activity">
+      <h2>Stream events</h2>
+      <ul id="events"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
