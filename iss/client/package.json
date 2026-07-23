@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/google.maps": "3.65.2",
+    "@types/google.maps": "3.65.3",
     "typescript": "6.0.3",
     "vite": "8.1.5"
   },
