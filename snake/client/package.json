@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "centrifuge": "5.7.0",
+    "centrifuge": "5.7.1",
     "uuid": "14.0.1"
   },
   "devDependencies": {

@@ -9,7 +9,7 @@
     "preview": "vite preview --port 4178"
   },
   "dependencies": {
-    "centrifuge": "5.7.0"
+    "centrifuge": "5.7.1"
   },
   "devDependencies": {
     "typescript": "6.0.3",

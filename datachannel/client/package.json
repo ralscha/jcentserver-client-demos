@@ -13,7 +13,7 @@
     "vite": "8.2.1"
   },
   "dependencies": {
-    "centrifuge": "5.7.0",
+    "centrifuge": "5.7.1",
     "vis-network": "10.1.1",
     "vis-data": "8.0.5"
   }
