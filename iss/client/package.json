@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@types/google.maps": "3.65.5",
+    "@types/google.maps": "3.66.0",
     "typescript": "6.0.3",
     "vite": "8.2.2"
   },
   "dependencies": {
     "@maptiler/sdk": "4.1.0",
-    "centrifuge": "5.7.1"
+    "centrifuge": "5.7.2"
   }
 }
