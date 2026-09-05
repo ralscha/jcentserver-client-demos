@@ -17,6 +17,7 @@ body {
   right: 0;
   bottom: 0;
   top: 0;
+  touch-action: none;
 }
 
 .colors {

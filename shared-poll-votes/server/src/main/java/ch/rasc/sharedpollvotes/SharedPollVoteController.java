@@ -42,7 +42,7 @@ public class SharedPollVoteController {
 
 	@GetMapping("/posts")
 	public List<SharedPollVoteService.VoteItem> posts() {
-		return List.copyOf(this.voteService.posts());
+		return this.voteService.posts();
 	}
 
 	@PostMapping("/vote")
@@ -67,8 +67,7 @@ public class SharedPollVoteController {
 			String keysHash = HexFormat.of()
 				.formatHex(MessageDigest.getInstance("SHA-256")
 					.digest(String.join("\0", keys).getBytes(StandardCharsets.UTF_8)));
-			String payload = "%d\0%d\0%s\0%s\0%s".formatted(now, exp, USER_ID, SharedPollVoteService.CHANNEL,
-					keysHash);
+			String payload = "%d\0%d\0%s\0%s\0%s".formatted(now, exp, USER_ID, SharedPollVoteService.CHANNEL, keysHash);
 			Mac mac = Mac.getInstance("HmacSHA256");
 			mac.init(new SecretKeySpec(this.sharedPollSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
 			return "%d:%d:%s".formatted(now, exp,
@@ -84,7 +83,10 @@ public class SharedPollVoteController {
 
 	public record KeysRequest(List<String> keys) {
 		public KeysRequest {
-			keys = keys == null ? List.of() : keys;
+			if (keys != null && (keys.size() > 20 || keys.stream().anyMatch(key -> key == null || key.isBlank()))) {
+				throw new IllegalArgumentException("keys must contain at most 20 non-empty values");
+			}
+			keys = keys == null ? List.of() : List.copyOf(keys);
 		}
 	}
 

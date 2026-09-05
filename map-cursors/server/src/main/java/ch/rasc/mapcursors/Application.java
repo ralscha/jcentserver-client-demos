@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
+
 @SpringBootApplication
 @ConfigurationPropertiesScan("ch.rasc.mapcursors")
 public class Application {
@@ -28,6 +30,12 @@ public class Application {
 					.maxAge(corsProperties.maxAge());
 			}
 		};
+	}
+
+	@Bean
+	CentrifugoServerApiClient centrifugoConfig(CentrifugoProperties centrifugoProperties) {
+		return CentrifugoServerApiClient
+			.create(cfg -> cfg.apiKey(centrifugoProperties.apiKey()).baseUrl(centrifugoProperties.apiBaseUrl()));
 	}
 
 }

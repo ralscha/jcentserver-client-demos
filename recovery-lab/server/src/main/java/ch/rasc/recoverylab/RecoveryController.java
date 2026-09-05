@@ -3,10 +3,12 @@ package ch.rasc.recoverylab;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -30,7 +32,12 @@ public class RecoveryController {
 
 	@PostMapping("/burst")
 	public void burst(@RequestBody Map<String, Integer> request) {
-		this.recoveryEventService.publishBurst(request.getOrDefault("count", 12));
+		Integer requestedCount = request.get("count");
+		int count = requestedCount == null ? 12 : requestedCount;
+		if (count < 1 || count > 100) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "count must be between 1 and 100");
+		}
+		this.recoveryEventService.publishBurst(count);
 	}
 
 	@PostMapping("/reset")

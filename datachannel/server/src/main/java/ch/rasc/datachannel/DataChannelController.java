@@ -1,12 +1,12 @@
 package ch.rasc.datachannel;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
@@ -23,37 +23,35 @@ public class DataChannelController {
 	}
 
 	/**
-	 * Called when a peer connects. Notifies all OTHER peers about the new peer, and
-	 * notifies the new peer about all existing peers.
+	 * Called when a peer connects. Existing peers are asked to initiate the WebRTC
+	 * connection to the new peer.
 	 */
 	@PostMapping("/connect")
-	public void connect(@RequestBody ConnectRequest request) {
+	public synchronized void connect(@RequestBody ConnectRequest request) {
 		String clientId = request.clientId();
-
-		// Notify all existing peers about the new peer
-		Map<String, Object> joinData = Collections.singletonMap("id", clientId);
-		for (String existingId : this.connectedClients) {
-			this.centrifugoServerApiClient.publication()
-				.publish(b -> b.channel("peer." + existingId).data(Map.of("event", "peer.connected", "id", clientId)));
+		if (!this.connectedClients.add(clientId)) {
+			return;
 		}
 
-		// Also notify the new peer about each existing peer
+		// Notifying both sides would create WebRTC offer glare and duplicate peer
+		// connections.
 		for (String existingId : this.connectedClients) {
-			final String eid = existingId;
-			this.centrifugoServerApiClient.publication()
-				.publish(b -> b.channel("peer." + clientId).data(Map.of("event", "peer.connected", "id", eid)));
+			if (!existingId.equals(clientId)) {
+				this.centrifugoServerApiClient.publication()
+					.publish(b -> b.channel("peer." + existingId)
+						.data(Map.of("event", "peer.connected", "id", clientId)));
+			}
 		}
-
-		this.connectedClients.add(clientId);
 	}
 
 	/**
 	 * Called when a peer disconnects. Notifies all other peers.
 	 */
 	@PostMapping("/disconnect")
-	public void disconnect(@RequestBody ConnectRequest request) {
-		String clientId = request.clientId();
-		this.connectedClients.remove(clientId);
+	public synchronized void disconnect(@RequestParam String clientId) {
+		if (!this.connectedClients.remove(clientId)) {
+			return;
+		}
 
 		Map<String, Object> data = Map.of("event", "peer.disconnected", "id", clientId);
 		for (String peerId : this.connectedClients) {

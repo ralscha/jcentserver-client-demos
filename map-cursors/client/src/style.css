@@ -49,11 +49,18 @@ h1 {
 }
 
 .status span,
-.status strong {
+.status strong,
+.status button {
   border: 1px solid #cfd8e6;
   border-radius: 6px;
   padding: 8px 10px;
   background: #f8fafc;
+}
+
+.status button {
+  color: #18202f;
+  cursor: pointer;
+  font: inherit;
 }
 
 .stage {

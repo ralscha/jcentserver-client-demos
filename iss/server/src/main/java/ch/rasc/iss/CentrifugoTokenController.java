@@ -2,14 +2,16 @@ package ch.rasc.iss;
 
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+
 import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
 
 @RestController
@@ -26,25 +28,21 @@ public class CentrifugoTokenController {
 	}
 
 	@GetMapping("/centrifugo-token")
-	@ResponseBody
-	public String token() {
+	public TokenResponse token() {
 		String userId = UUID.randomUUID().toString();
-		System.out.println("Generated userId: " + userId);
-		return JWT.create()
-			.withSubject(userId)
-			// auto subscribe to channel "iss"
-			/* .withClaim("channels", List.of("iss")) */
-			.sign(this.algorithmHS);
+		return new TokenResponse(userId, JWT.create().withSubject(userId).sign(this.algorithmHS));
 	}
 
-	record UserId(String userId) {
+	record TokenResponse(String userId, String token) {
 	}
 
 	@PostMapping("/subscribe")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void subscribe(@RequestBody UserId userId) {
-		var response = this.centrifugoServerApiClient.connection()
-			.subscribe(b -> b.channel("iss").user(userId.userId()));
-		System.out.println(response);
+		this.centrifugoServerApiClient.connection().subscribe(b -> b.channel("iss").user(userId.userId()));
+	}
+
+	record UserId(String userId) {
 	}
 
 }

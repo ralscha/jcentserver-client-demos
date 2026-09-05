@@ -51,8 +51,8 @@ interface MeterState {
   lastFrameBytes: number;
 }
 
-const serverUrl = 'http://localhost:8091';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8091';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 const textEncoder = new TextEncoder();
 const wsHooks: Array<(bytes: number) => void> = [];
@@ -132,11 +132,17 @@ function transports(): TransportEndpoint[] {
 
 async function fetchText(path: string, init?: RequestInit): Promise<string> {
   const response = await fetch(`${serverUrl}${path}`, init);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.text();
 }
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${serverUrl}${path}`, init);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.json() as Promise<T>;
 }
 
@@ -188,18 +194,27 @@ function renderState(state: MatchState) {
   winnerIndicatorEl.textContent = state.scoreboard.winner ? `${state.scoreboard.winner} wins the match` : 'Match in progress';
   autoplayBtn.textContent = state.telemetry.autoplay ? 'Pause autoplay' : 'Resume autoplay';
 
-  statGridEl.innerHTML = '';
+  statGridEl.replaceChildren();
   Object.entries(state.stats).forEach(([label, value]) => {
     const card = document.createElement('article');
     card.className = 'stat-card';
-    card.innerHTML = `<span class="label">${label}</span><strong>${value}</strong>`;
+    const labelEl = document.createElement('span');
+    labelEl.className = 'label';
+    labelEl.textContent = label;
+    const valueEl = document.createElement('strong');
+    valueEl.textContent = value;
+    card.append(labelEl, valueEl);
     statGridEl.appendChild(card);
   });
 
-  eventLogEl.innerHTML = '';
+  eventLogEl.replaceChildren();
   state.lastEvents.forEach((event) => {
     const item = document.createElement('li');
-    item.innerHTML = `<div>${event.text}</div><small>${event.at}</small>`;
+    const text = document.createElement('div');
+    text.textContent = event.text;
+    const time = document.createElement('small');
+    time.textContent = event.at;
+    item.append(text, time);
     eventLogEl.appendChild(item);
   });
 
@@ -246,11 +261,14 @@ async function connectFeed(mode: FeedMode, delta: boolean) {
 }
 
 async function post(path: string, body?: unknown) {
-  await fetch(`${serverUrl}${path}`, {
+  const response = await fetch(`${serverUrl}${path}`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: body === undefined ? undefined : JSON.stringify(body)
   });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
 }
 
 async function bootstrap() {
@@ -284,4 +302,4 @@ window.addEventListener('beforeunload', () => {
   clients.delta?.disconnect();
 });
 
-void bootstrap();
+void bootstrap().catch(console.error);

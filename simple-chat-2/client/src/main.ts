@@ -1,8 +1,8 @@
 import { Centrifuge, TransportEndpoint } from 'centrifuge';
 import './style.css';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 const FADE_TIME = 150;
 const TYPING_TIMER_LENGTH = 400;
@@ -34,6 +34,7 @@ let userId = '';
 let connected = false;
 let typing = false;
 let lastTypingTime = 0;
+let centrifuge: Centrifuge | null = null;
 
 function getUsernameColor(name: string): string {
   let hash = 7;
@@ -121,11 +122,14 @@ function transports(): TransportEndpoint[] {
 }
 
 async function post(path: string, body: unknown) {
-  await fetch(`${serverUrl}${path}`, {
+  const response = await fetch(`${serverUrl}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
 }
 
 function sendMessage() {
@@ -134,7 +138,7 @@ function sendMessage() {
     inputMessage.value = '';
     // Show own message immediately
     addChatMessage({ username, message });
-    post('/new-message', { username, message });
+    void post('/new-message', { username, message }).catch(console.error);
   }
 }
 
@@ -142,12 +146,12 @@ function updateTyping() {
   if (!connected) return;
   if (!typing) {
     typing = true;
-    post('/typing', { username });
+    void post('/typing', { username }).catch(console.error);
   }
   lastTypingTime = Date.now();
   setTimeout(() => {
     if (Date.now() - lastTypingTime >= TYPING_TIMER_LENGTH && typing) {
-      post('/stop-typing', { username });
+      void post('/stop-typing', { username }).catch(console.error);
       typing = false;
     }
   }, TYPING_TIMER_LENGTH);
@@ -155,15 +159,18 @@ function updateTyping() {
 
 async function setUsername() {
   const name = usernameInput.value.trim();
-  if (!name) return;
+  if (!name || username) return;
   username = name;
   userId = crypto.randomUUID();
 
   const tokenResponse = await fetch(`${serverUrl}/centrifugo-token?userId=${encodeURIComponent(userId)}`);
+  if (!tokenResponse.ok) {
+    throw new Error(`Could not fetch token: ${tokenResponse.status}`);
+  }
   const token = await tokenResponse.text();
 
   // Connect to Centrifugo
-  const centrifuge = new Centrifuge(transports(), { token });
+  centrifuge = new Centrifuge(transports(), { token });
 
   const sub = centrifuge.newSubscription('chat');
 
@@ -193,19 +200,21 @@ async function setUsername() {
   sub.subscribe();
   centrifuge.connect();
 
-  // Switch pages
+  // Register user on server
+  const loginResponse = await fetch(`${serverUrl}/add-user`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, username }),
+  });
+  if (!loginResponse.ok) {
+    throw new Error(`Could not register user: ${loginResponse.status}`);
+  }
+  const loginData = await loginResponse.json();
+
+  // Switch pages only after the server accepted the registration.
   loginPage.classList.remove('active');
   chatPage.classList.add('active');
   inputMessage.focus();
-
-  // Register user on server
-  const loginData = await (
-    await fetch(`${serverUrl}/add-user`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, username }),
-    })
-  ).json();
 
   connected = true;
   log('Welcome to Chat!');
@@ -213,7 +222,7 @@ async function setUsername() {
 
   // Remove user when tab/window is closed
   window.addEventListener('beforeunload', () => {
-    navigator.sendBeacon(`${serverUrl}/remove-user`, JSON.stringify({ userId }));
+    navigator.sendBeacon(`${serverUrl}/remove-user?userId=${encodeURIComponent(userId)}`);
   });
 }
 
@@ -224,11 +233,19 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
     if (username) {
       sendMessage();
       if (typing) {
-        post('/stop-typing', { username });
+        void post('/stop-typing', { username }).catch(console.error);
         typing = false;
       }
     } else {
-      setUsername();
+      void setUsername().catch((error) => {
+        centrifuge?.disconnect();
+        centrifuge = null;
+        username = '';
+        userId = '';
+        connected = false;
+        usernameInput.focus();
+        console.error(error);
+      });
     }
   }
 });

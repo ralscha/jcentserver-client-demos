@@ -1,7 +1,7 @@
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 interface ChatMessage {
     id: string;
@@ -23,8 +23,14 @@ function transports(): TransportEndpoint[] {
 
 function show(message: ChatMessage, me: boolean) {
     const msgAlign = me ? 'right' : 'left';
-    const msgLog = `<div class='blockquote-${msgAlign}'>${message.text}<br><span class='time'>${message.sentAt}</span></div>`;
-    logDiv.innerHTML = msgLog + logDiv.innerHTML;
+    const item = document.createElement('div');
+    item.className = `blockquote-${msgAlign}`;
+    item.append(document.createTextNode(message.text), document.createElement('br'));
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = message.sentAt;
+    item.appendChild(time);
+    logDiv.prepend(item);
 }
 
 async function sendMessage() {
@@ -38,11 +44,16 @@ async function sendMessage() {
 
         sentMessages.add(message.id);
 
-        await fetch(`${serverUrl}/chat`, {
+        const response = await fetch(`${serverUrl}/chat`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(message)
         });
+
+        if (!response.ok) {
+            sentMessages.delete(message.id);
+            throw new Error(`Could not send message: ${response.status}`);
+        }
 
         msgInput.value = '';
     }
@@ -50,6 +61,9 @@ async function sendMessage() {
 
 async function main() {
     const response = await fetch(`${serverUrl}/centrifugo-token`);
+    if (!response.ok) {
+        throw new Error(`Could not fetch token: ${response.status}`);
+    }
     const token = await response.text();
 
     const centrifuge = new Centrifuge(transports(), {token});

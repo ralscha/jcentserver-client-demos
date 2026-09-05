@@ -4,8 +4,8 @@ import {GridComponent, LegendComponent, TitleComponent, TooltipComponent} from '
 import {CanvasRenderer} from 'echarts/renderers';
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 echarts.use([LineChart, GridComponent, LegendComponent, TitleComponent, TooltipComponent, CanvasRenderer]);
 

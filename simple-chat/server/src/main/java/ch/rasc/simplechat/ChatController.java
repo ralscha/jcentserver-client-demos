@@ -34,6 +34,17 @@ public class ChatController {
 	}
 
 	record ChatMessage(String id, String text, String sentAt) {
+		ChatMessage {
+			if (id == null || id.isBlank() || id.length() > 64) {
+				throw new IllegalArgumentException("invalid message id");
+			}
+			if (text == null || text.isBlank() || text.length() > 2_000) {
+				throw new IllegalArgumentException("message must contain between 1 and 2000 characters");
+			}
+			if (sentAt == null || sentAt.length() > 64) {
+				throw new IllegalArgumentException("invalid sentAt value");
+			}
+		}
 	}
 
 	@PostMapping("/chat")

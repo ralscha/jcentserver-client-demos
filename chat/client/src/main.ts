@@ -1,12 +1,13 @@
 import { Centrifuge, Subscription, TransportEndpoint } from 'centrifuge';
 import './style.css';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 type MessageType = 'MSG' | 'JOIN' | 'LEAVE';
 
 interface ChatMessage {
+  id: string;
   type: MessageType;
   user: string;
   message: string;
@@ -23,8 +24,8 @@ interface RoomEvent {
 // State
 let username = '';
 let currentRoom = '';
-const joinedRooms = new Set<string>();
 const roomSubscriptions = new Map<string, Subscription>();
+const renderedMessageIds = new Set<string>();
 let centrifuge: Centrifuge | null = null;
 
 // DOM
@@ -67,6 +68,9 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`Request failed with status ${res.status}`);
+  }
   if (res.headers.get('content-type')?.includes('application/json')) {
     return res.json() as Promise<T>;
   }
@@ -74,7 +78,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 function renderRoomList(rooms: string[]) {
-  roomListEl.innerHTML = '';
+  roomListEl.replaceChildren();
   rooms.sort().forEach((room) => addRoomToList(room));
 }
 
@@ -100,13 +104,14 @@ async function switchRoom(room: string) {
     const sub = roomSubscriptions.get(currentRoom);
     if (sub) {
       sub.unsubscribe();
+      roomSubscriptions.delete(currentRoom);
     }
-    joinedRooms.delete(currentRoom);
   }
 
   currentRoom = room;
   roomListEl.querySelector(`[data-room="${CSS.escape(room)}"]`)?.classList.add('active');
-  messagesEl.innerHTML = '';
+  messagesEl.replaceChildren();
+  renderedMessageIds.clear();
   roomTitle.textContent = `# ${room}`;
   noRoomMsg.classList.add('hidden');
   roomView.classList.remove('hidden');
@@ -116,7 +121,7 @@ async function switchRoom(room: string) {
     const sub = centrifuge!.newSubscription(`room.${room}`);
     sub.on('publication', (ctx) => {
       const data = ctx.data as RoomEvent;
-      if (data.event === 'new-message' && data.message) {
+      if (room === currentRoom && data.event === 'new-message' && data.message) {
         appendMessage(data.message);
       }
     });
@@ -124,11 +129,9 @@ async function switchRoom(room: string) {
     roomSubscriptions.set(room, sub);
   }
 
-  joinedRooms.add(room);
-
   // Join room on server and load history
   const history = await post<ChatMessage[]>('/join-room', { room, username });
-  if (history) {
+  if (room === currentRoom && history) {
     history.forEach(appendMessage);
   }
 
@@ -136,6 +139,8 @@ async function switchRoom(room: string) {
 }
 
 function appendMessage(msg: ChatMessage) {
+  if (renderedMessageIds.has(msg.id)) return;
+  renderedMessageIds.add(msg.id);
   const li = document.createElement('li');
   if (msg.type === 'MSG') {
     li.classList.add('msg');
@@ -202,13 +207,6 @@ async function signin() {
   roomsSub.subscribe();
   centrifuge.connect();
 
-  // Cleanup on close
-  window.addEventListener('beforeunload', () => {
-    if (currentRoom) {
-      navigator.sendBeacon(`${serverUrl}/leave-room`, JSON.stringify({ room: currentRoom, username }));
-    }
-    navigator.sendBeacon(`${serverUrl}/signout`, JSON.stringify({ username }));
-  });
 }
 
 async function signout() {
@@ -220,13 +218,13 @@ async function signout() {
   centrifuge?.disconnect();
   centrifuge = null;
   roomSubscriptions.clear();
-  joinedRooms.clear();
   username = '';
 
   chatScreen.classList.add('hidden');
   signinScreen.classList.remove('hidden');
   usernameInput.value = '';
-  messagesEl.innerHTML = '';
+  messagesEl.replaceChildren();
+  renderedMessageIds.clear();
   roomView.classList.add('hidden');
   noRoomMsg.classList.remove('hidden');
 }
@@ -249,4 +247,11 @@ newRoomBtn.addEventListener('click', () => {
 sendBtn.addEventListener('click', sendMessage);
 messageInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') sendMessage();
+});
+
+window.addEventListener('beforeunload', () => {
+  if (!username) return;
+  const query = new URLSearchParams({ username });
+  if (currentRoom) query.set('room', currentRoom);
+  navigator.sendBeacon(`${serverUrl}/unload?${query}`);
 });

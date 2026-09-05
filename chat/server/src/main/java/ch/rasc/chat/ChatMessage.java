@@ -1,4 +1,4 @@
 package ch.rasc.chat;
 
-public record ChatMessage(MessageType type, String user, String message, long sendDate) {
+public record ChatMessage(String id, MessageType type, String user, String message, long sendDate) {
 }

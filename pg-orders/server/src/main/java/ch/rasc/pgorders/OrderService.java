@@ -64,12 +64,15 @@ public class OrderService {
 	public KitchenOrder advance(long id) {
 		return this.transactionTemplate.execute(status -> {
 			KitchenOrder current = this.jdbcTemplate.queryForObject(
-					"select id, item, station, status, created_at from kitchen_order where id = ?", this::mapOrder,
-					id);
+					"select id, item, station, status, created_at from kitchen_order where id = ?", this::mapOrder, id);
+			if ("served".equals(current.status())) {
+				return current;
+			}
 			String next = switch (current.status()) {
 				case "queued" -> "preparing";
 				case "preparing" -> "ready";
-				default -> "served";
+				case "ready" -> "served";
+				default -> throw new IllegalStateException("Unknown order status: " + current.status());
 			};
 			KitchenOrder updated = this.jdbcTemplate.queryForObject("""
 					update kitchen_order set status = ?
@@ -85,13 +88,18 @@ public class OrderService {
 		this.jdbcTemplate.queryForMap("""
 				select * from cf_stream_publish(
 				  p_channel => ?,
-				  p_data => ?::jsonb
+				  p_data => jsonb_build_object(
+				    'type', ?,
+				    'order', jsonb_build_object(
+				      'id', ?,
+				      'item', ?,
+				      'station', ?,
+				      'status', ?,
+				      'createdAt', ?
+				    )
+				  )
 				)
-				""", CHANNEL,
-				"""
-						{"type":"%s","order":{"id":%d,"item":"%s","station":"%s","status":"%s","createdAt":"%s"}}
-						""".formatted(type, order.id(), json(order.item()), json(order.station()), order.status(),
-						order.createdAt()));
+				""", CHANNEL, type, order.id(), order.item(), order.station(), order.status(), order.createdAt());
 	}
 
 	private StreamPosition streamPosition() {
@@ -102,12 +110,8 @@ public class OrderService {
 	}
 
 	private KitchenOrder mapOrder(ResultSet rs, int rowNum) throws SQLException {
-		return new KitchenOrder(rs.getLong("id"), rs.getString("item"), rs.getString("station"),
-				rs.getString("status"), rs.getObject("created_at", OffsetDateTime.class).toInstant().toString());
-	}
-
-	private String json(String value) {
-		return value.replace("\\", "\\\\").replace("\"", "\\\"");
+		return new KitchenOrder(rs.getLong("id"), rs.getString("item"), rs.getString("station"), rs.getString("status"),
+				rs.getObject("created_at", OffsetDateTime.class).toInstant().toString());
 	}
 
 	public record StreamPosition(long offset, String epoch) {

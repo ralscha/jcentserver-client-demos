@@ -1,8 +1,8 @@
 import {Centrifuge, MapSubscription, TransportEndpoint} from 'centrifuge';
 import './style.css';
 
-const serverUrl = 'http://localhost:8094';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8094';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 let centrifuge: Centrifuge | null = null;
 let subscription: MapSubscription | null = null;
@@ -23,7 +23,17 @@ function transports(): TransportEndpoint[] {
 
 async function fetchText(path: string): Promise<string> {
   const response = await fetch(`${serverUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.text();
+}
+
+async function post(path: string): Promise<void> {
+  const response = await fetch(`${serverUrl}${path}`, {method: 'POST'});
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
 }
 
 function renderCursors() {
@@ -34,7 +44,10 @@ function renderCursors() {
     node.style.left = `${cursor.x}%`;
     node.style.top = `${cursor.y}%`;
     node.style.setProperty('--cursor-color', cursor.color);
-    node.innerHTML = `<span></span><strong>${cursor.name}</strong>`;
+    const marker = document.createElement('span');
+    const label = document.createElement('strong');
+    label.textContent = cursor.name;
+    node.append(marker, label);
     node.dataset.key = key;
     stageEl.appendChild(node);
   });
@@ -92,6 +105,17 @@ function disconnect() {
   centrifuge?.disconnect();
 }
 
+document.getElementById('clear-btn')!.addEventListener('click', async () => {
+  try {
+    await post('/cursors/clear');
+    cursors.clear();
+    renderCursors();
+  }
+  catch (error) {
+    connectionStateEl.textContent = `error (${String(error)})`;
+  }
+});
+
 let pendingFrame = 0;
 stageEl.addEventListener('pointermove', (event) => {
   const rect = stageEl.getBoundingClientRect();
@@ -113,5 +137,7 @@ stageEl.addEventListener('pointermove', (event) => {
   });
 });
 
-void connect();
+void connect().catch((error) => {
+  connectionStateEl.textContent = `error (${String(error)})`;
+});
 window.addEventListener('beforeunload', disconnect);

@@ -15,8 +15,8 @@ type PresenceInfo = {
   connInfo?: Record<string, unknown>;
 };
 
-const serverUrl = 'http://localhost:8093';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8093';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 let currentIdentity: SigninPayload | null = null;
 let centrifuge: Centrifuge | null = null;
@@ -42,6 +42,9 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(body)
   });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.json() as Promise<T>;
 }
 
@@ -60,7 +63,10 @@ function eventInfo(ctx: {info?: PresenceInfo}) {
 
 function pushEvent(text: string) {
   const item = document.createElement('li');
-  item.innerHTML = `${text}<span>${new Date().toLocaleTimeString()}</span>`;
+  item.append(document.createTextNode(text));
+  const time = document.createElement('span');
+  time.textContent = new Date().toLocaleTimeString();
+  item.appendChild(time);
   eventFeedEl.prepend(item);
   while (eventFeedEl.children.length > 14) {
     eventFeedEl.removeChild(eventFeedEl.lastElementChild!);
@@ -68,9 +74,11 @@ function pushEvent(text: string) {
 }
 
 function renderRoster(clients: PresenceInfo[]) {
-  rosterEl.innerHTML = '';
+  rosterEl.replaceChildren();
   if (clients.length === 0) {
-    rosterEl.innerHTML = '<p>No online users.</p>';
+    const empty = document.createElement('p');
+    empty.textContent = 'No online users.';
+    rosterEl.appendChild(empty);
     return;
   }
 
@@ -81,9 +89,19 @@ function renderRoster(clients: PresenceInfo[]) {
     const desk = typeof info.desk === 'string' ? info.desk : 'remote';
     const card = document.createElement('article');
     card.className = 'person';
-    card.innerHTML = `<div><strong>${name}</strong><small>${role}</small></div><div><strong>${desk}</strong><small>${client.client ?? ''}</small></div>`;
+    card.append(personDetail(name, role), personDetail(desk, client.client ?? ''));
     rosterEl.appendChild(card);
   });
+}
+
+function personDetail(primary: string, secondary: string): HTMLDivElement {
+  const detail = document.createElement('div');
+  const strong = document.createElement('strong');
+  strong.textContent = primary;
+  const small = document.createElement('small');
+  small.textContent = secondary;
+  detail.append(strong, small);
+  return detail;
 }
 
 async function refreshPresence() {
@@ -149,11 +167,11 @@ signinForm.addEventListener('submit', (event) => {
     username: nameInput.value.trim(),
     role: roleInput.value.trim(),
     desk: deskInput.value.trim()
-  });
+  }).catch((error) => setStatus(`error: ${String(error)}`));
 });
 
 document.getElementById('refresh-btn')!.addEventListener('click', () => {
-  void refreshPresence();
+  void refreshPresence().catch((error) => setStatus(`error: ${String(error)}`));
 });
 
 document.getElementById('disconnect-btn')!.addEventListener('click', () => {

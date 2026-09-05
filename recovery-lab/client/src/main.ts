@@ -8,8 +8,8 @@ interface RecoveryEvent {
   publishedAt: string;
 }
 
-const serverUrl = 'http://localhost:8092';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8092';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 let centrifuge: Centrifuge | null = null;
 let subscription: Subscription | null = null;
@@ -30,15 +30,21 @@ function transports(): TransportEndpoint[] {
 
 async function fetchText(path: string): Promise<string> {
   const response = await fetch(`${serverUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.text();
 }
 
 async function post(path: string, body?: unknown) {
-  await fetch(`${serverUrl}${path}`, {
+  const response = await fetch(`${serverUrl}${path}`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: body === undefined ? undefined : JSON.stringify(body)
   });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
 }
 
 function renderStats() {
@@ -50,7 +56,10 @@ function renderStats() {
 function pushLog(text: string, kind: 'info' | 'warn' | 'data' = 'data') {
   const item = document.createElement('li');
   item.className = kind;
-  item.innerHTML = `${text}<span>${new Date().toLocaleTimeString()}</span>`;
+  item.append(document.createTextNode(text));
+  const time = document.createElement('span');
+  time.textContent = new Date().toLocaleTimeString();
+  item.appendChild(time);
   timelineEl.prepend(item);
   while (timelineEl.children.length > 18) {
     timelineEl.removeChild(timelineEl.lastElementChild!);
@@ -149,9 +158,11 @@ document.getElementById('reset-server-btn')!.addEventListener('click', async () 
 });
 
 document.getElementById('clear-log-btn')!.addEventListener('click', () => {
-  timelineEl.innerHTML = '';
+  timelineEl.replaceChildren();
   timelineSummaryEl.textContent = 'Timeline cleared.';
 });
 
 renderStats();
-void connect();
+void connect().catch((error) => {
+  connectionStateEl.textContent = `error (${String(error)})`;
+});

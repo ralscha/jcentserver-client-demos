@@ -4,9 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import ch.rasc.jcentserverclient.CentrifugoServerApiClient;
 
 @SpringBootApplication
 @ConfigurationPropertiesScan("ch.rasc.sharedpollvotes")
@@ -32,11 +33,9 @@ public class Application {
 	}
 
 	@Bean
-	RestClient centrifugoRestClient(CentrifugoProperties centrifugoProperties) {
-		return RestClient.builder()
-			.baseUrl(centrifugoProperties.apiBaseUrl())
-			.defaultHeader("Authorization", "apikey " + centrifugoProperties.apiKey())
-			.build();
+	CentrifugoServerApiClient centrifugoConfig(CentrifugoProperties centrifugoProperties) {
+		return CentrifugoServerApiClient
+			.create(cfg -> cfg.apiKey(centrifugoProperties.apiKey()).baseUrl(centrifugoProperties.apiBaseUrl()));
 	}
 
 }

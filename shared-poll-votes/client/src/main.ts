@@ -9,8 +9,8 @@ interface VoteItem {
   version: number;
 }
 
-const serverUrl = 'http://localhost:8095';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8095';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 const posts = new Map<string, VoteItem>();
 const tracked = new Set<string>();
 
@@ -28,17 +28,25 @@ function transports(): TransportEndpoint[] {
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${serverUrl}${path}`, init);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.json() as Promise<T>;
 }
 
 async function fetchText(path: string): Promise<string> {
   const response = await fetch(`${serverUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.text();
 }
 
 function logUpdate(text: string) {
   const item = document.createElement('li');
-  item.innerHTML = `<span>${new Date().toLocaleTimeString()}</span>${text}`;
+  const time = document.createElement('span');
+  time.textContent = new Date().toLocaleTimeString();
+  item.append(time, document.createTextNode(text));
   updatesEl.prepend(item);
   while (updatesEl.children.length > 12) {
     updatesEl.removeChild(updatesEl.lastElementChild!);
@@ -46,21 +54,33 @@ function logUpdate(text: string) {
 }
 
 function render() {
-  cardsEl.innerHTML = '';
+  cardsEl.replaceChildren();
   for (const post of posts.values()) {
     const article = document.createElement('article');
     article.className = tracked.has(post.key) ? 'card tracked' : 'card';
-    article.innerHTML = `
-      <div>
-        <span>${post.category}</span>
-        <h2>${post.title}</h2>
-      </div>
-      <strong>${post.votes}</strong>
-      <div class="actions">
-        <label><input type="checkbox" ${tracked.has(post.key) ? 'checked' : ''} data-track="${post.key}" /> Track</label>
-        <button data-vote="${post.key}">Vote</button>
-      </div>
-    `;
+    const detail = document.createElement('div');
+    const category = document.createElement('span');
+    category.textContent = post.category;
+    const title = document.createElement('h2');
+    title.textContent = post.title;
+    detail.append(category, title);
+
+    const votes = document.createElement('strong');
+    votes.textContent = String(post.votes);
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = tracked.has(post.key);
+    checkbox.dataset.track = post.key;
+    label.append(checkbox, document.createTextNode(' Track'));
+    const vote = document.createElement('button');
+    vote.dataset.vote = post.key;
+    vote.textContent = 'Vote';
+    actions.append(label, vote);
+    article.append(detail, votes, actions);
     cardsEl.appendChild(article);
   }
   trackedCountEl.textContent = `${tracked.size} tracked`;
@@ -148,4 +168,6 @@ async function bootstrap() {
   sub?.track([...tracked]);
 }
 
-void bootstrap();
+void bootstrap().catch((error) => {
+  connectionStateEl.textContent = `error (${String(error)})`;
+});

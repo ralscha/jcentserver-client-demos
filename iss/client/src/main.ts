@@ -3,14 +3,19 @@ import {Centrifuge, TransportEndpoint} from 'centrifuge';
 import * as maptilersdk from '@maptiler/sdk';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 maptilersdk.config.apiKey = import.meta.env.VITE_MAPTILER_API_KEY;
 
 let centered = false;
 let issMarker: maptilersdk.Marker | null = null;
-let flightPath: [number, number][] = [];
+const flightPath: [number, number][] = [];
+
+interface TokenResponse {
+    userId: string;
+    token: string;
+}
 
 async function main() {
     const map = new maptilersdk.Map({
@@ -34,25 +39,19 @@ async function main() {
         .setLngLat([0, 0])
         .addTo(map);
 
-    const token = await fetchCentrifugoToken();
-    // const userId = extractUserIdFromToken(token);
+    const tokenResponse = await fetchCentrifugoToken();
 
-    const centrifuge = new Centrifuge(transports(), {token});
+    const centrifuge = new Centrifuge(transports(), {token: tokenResponse.token});
 
-    // server side subscription
-    // centrifuge.on('publication', ctx => updateMarker(map, ctx.data));
+    // Publications from server-side subscriptions arrive on the client itself.
+    centrifuge.on('publication', ctx => updateMarker(map, ctx.data));
 
-
-    // client side subscription
-    const sub = centrifuge.newSubscription('iss');
-    sub.on('publication', ctx => updateMarker(map, ctx.data));
-    sub.subscribe();
-
-
+    const connected = new Promise<void>((resolve) => {
+        centrifuge.once('connected', () => resolve());
+    });
     centrifuge.connect();
-
-    // server side subscription. run after connecting to the server
-    // await subscribe(userId);
+    await connected;
+    await subscribe(tokenResponse.userId);
 
 }
 
@@ -73,35 +72,27 @@ function transports(): TransportEndpoint[] {
     ];
 }
 
-// function extractUserIdFromToken(token: string): string {
-//     const payload = token.split('.')[1];
-//     const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-//     const jsonPayload = JSON.parse(decodedPayload);
-//     return jsonPayload.sub;
-// }
-
-async function fetchCentrifugoToken(): Promise<string> {
+async function fetchCentrifugoToken(): Promise<TokenResponse> {
     const response = await fetch(`${serverUrl}/centrifugo-token`);
     if (!response.ok) {
         throw new Error(`Failed to fetch centrifugo token: ${response.status} ${response.statusText}`);
     }
 
-    return await response.text();
+    return response.json() as Promise<TokenResponse>;
 }
 
-// async function subscribe(userId: string): Promise<void> {
-//     const response = await fetch(`${serverUrl}/subscribe`, {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({userId})
-//     });
-//     if (!response.ok) {
-//         throw new Error(`Failed to subscribe: ${response.status} ${response.statusText}`);
-//     }
-//     return;
-// }
+async function subscribe(userId: string): Promise<void> {
+    const response = await fetch(`${serverUrl}/subscribe`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({userId})
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to subscribe: ${response.status} ${response.statusText}`);
+    }
+}
 
 function updateMarker(map: maptilersdk.Map, position: { latitude: string, longitude: string }) {
     const lng = parseFloat(position.longitude);

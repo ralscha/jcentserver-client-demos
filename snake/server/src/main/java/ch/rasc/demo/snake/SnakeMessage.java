@@ -15,10 +15,6 @@ public class SnakeMessage {
 
 	private final String id;
 
-	private SnakeMessage(String type) {
-		this(type, null, null);
-	}
-
 	private SnakeMessage(String type, Object data) {
 		this(type, data, null);
 	}
@@ -29,12 +25,12 @@ public class SnakeMessage {
 		this.id = id;
 	}
 
-	public static SnakeMessage createDeadMessage() {
-		return new SnakeMessage("dead");
+	public static SnakeMessage createDeadMessage(String id) {
+		return new SnakeMessage("dead", null, id);
 	}
 
-	public static SnakeMessage createKillMessage() {
-		return new SnakeMessage("kill");
+	public static SnakeMessage createKillMessage(String id) {
+		return new SnakeMessage("kill", null, id);
 	}
 
 	public static SnakeMessage createUpdateMessage(List<Map<String, Object>> data) {

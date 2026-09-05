@@ -7,6 +7,8 @@ import './main.css';
 
 echarts.use([PieChart, TooltipComponent, TitleComponent, CanvasRenderer]);
 const oss = ['Windows', 'macOS', 'Linux', 'Other'];
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 function getRequiredElement(id) {
   const element = document.getElementById(id);
@@ -40,21 +42,24 @@ function transports() {
   return [
     {
       transport: 'websocket',
-      endpoint: `ws://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/websocket`
+      endpoint: `ws://${centrifugoBase}/connection/websocket`
     },
     {
       transport: 'http_stream',
-      endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/http_stream`
+      endpoint: `http://${centrifugoBase}/connection/http_stream`
     },
     {
       transport: 'sse',
-      endpoint: `http://${import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS}/connection/sse`
+      endpoint: `http://${centrifugoBase}/connection/sse`
     }
   ];
 }
 
 export async function init() {
-  const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/token`);
+  const response = await fetch(`${serverUrl}/token`);
+  if (!response.ok) {
+    throw new Error(`Could not fetch token: ${response.status}`);
+  }
   const token = await response.text();
 
   const votedMessage = getRequiredElement('voted');
@@ -67,29 +72,40 @@ export async function init() {
   alreadyVotedMessage.classList.toggle('hidden', !alreadyVoted);
   voteForm.classList.toggle('hidden', alreadyVoted);
 
-  voteButton.addEventListener('click', () => {
+  voteButton.addEventListener('click', async () => {
     const choice = document.querySelector('input[name=os]:checked')?.value;
     if (!choice) {
       return;
     }
 
-    localStorage.setItem('hasVoted', 'true');
+    voteButton.disabled = true;
+    try {
+      const voteResponse = await fetch(`${serverUrl}/poll`, {
+        method: 'POST',
+        body: choice
+      });
+      if (!voteResponse.ok) {
+        throw new Error(`Vote failed with status ${voteResponse.status}`);
+      }
 
-    fetch(`${import.meta.env.VITE_SERVER_URL}/poll`, {
-      method: 'POST',
-      body: choice
-    }).then(() => {
+      localStorage.setItem('hasVoted', 'true');
       votedMessage.classList.remove('hidden');
       alreadyVotedMessage.classList.add('hidden');
       voteForm.classList.add('hidden');
-    }).catch((error) => console.error(error));
+    } catch (error) {
+      voteButton.disabled = false;
+      console.error(error);
+    }
   });
 
   const chart = echarts.init(chartElement);
   chart.setOption(getChartOption());
   window.addEventListener('resize', () => chart.resize());
 
-  const pollResponse = await fetch(`${import.meta.env.VITE_SERVER_URL}/poll`);
+  const pollResponse = await fetch(`${serverUrl}/poll`);
+  if (!pollResponse.ok) {
+    throw new Error(`Could not fetch poll: ${pollResponse.status}`);
+  }
   const pollData = await pollResponse.text();
   drawChart(pollData, chart);
 
@@ -137,5 +153,5 @@ function getChartOption() {
   };
 }
 
-init();
+void init().catch(console.error);
 

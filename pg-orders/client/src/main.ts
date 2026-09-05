@@ -20,8 +20,8 @@ interface OrderEvent {
   order: KitchenOrder;
 }
 
-const serverUrl = 'http://localhost:8096';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8096';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 let centrifuge: Centrifuge | null = null;
 let subscription: Subscription | null = null;
@@ -40,40 +40,56 @@ function transports(): TransportEndpoint[] {
 
 async function fetchJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${serverUrl}${path}`, init);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.json() as Promise<T>;
 }
 
 async function fetchText(path: string): Promise<string> {
   const response = await fetch(`${serverUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
   return response.text();
 }
 
 function renderOrders() {
-  ordersEl.innerHTML = '';
+  ordersEl.replaceChildren();
   const sorted = [...orders.values()].sort((a, b) => b.id - a.id);
   if (sorted.length === 0) {
-    ordersEl.innerHTML = '<p class="empty">No orders yet.</p>';
+    const empty = document.createElement('p');
+    empty.className = 'empty';
+    empty.textContent = 'No orders yet.';
+    ordersEl.appendChild(empty);
     return;
   }
 
   for (const order of sorted) {
     const article = document.createElement('article');
     article.className = `order ${order.status}`;
-    article.innerHTML = `
-      <div>
-        <span>#${order.id} ${order.station}</span>
-        <h2>${order.item}</h2>
-      </div>
-      <strong>${order.status}</strong>
-      <button data-advance="${order.id}" ${order.status === 'served' ? 'disabled' : ''}>Advance</button>
-    `;
+    const detail = document.createElement('div');
+    const station = document.createElement('span');
+    station.textContent = `#${order.id} ${order.station}`;
+    const item = document.createElement('h2');
+    item.textContent = order.item;
+    detail.append(station, item);
+    const status = document.createElement('strong');
+    status.textContent = order.status;
+    const advance = document.createElement('button');
+    advance.dataset.advance = String(order.id);
+    advance.disabled = order.status === 'served';
+    advance.textContent = 'Advance';
+    article.append(detail, status, advance);
     ordersEl.appendChild(article);
   }
 }
 
 function logEvent(text: string) {
   const item = document.createElement('li');
-  item.innerHTML = `<span>${new Date().toLocaleTimeString()}</span>${text}`;
+  const time = document.createElement('span');
+  time.textContent = new Date().toLocaleTimeString();
+  item.append(time, document.createTextNode(text));
   eventsEl.prepend(item);
   while (eventsEl.children.length > 12) {
     eventsEl.removeChild(eventsEl.lastElementChild!);
@@ -157,4 +173,6 @@ ordersEl.addEventListener('click', async (event) => {
   renderOrders();
 });
 
-void connect();
+void connect().catch((error) => {
+  connectionStateEl.textContent = `error (${String(error)})`;
+});

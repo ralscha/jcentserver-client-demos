@@ -1,8 +1,8 @@
 import { Centrifuge, TransportEndpoint } from 'centrifuge';
 import './style.css';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 interface DrawingMessage {
   x0: number;
@@ -20,12 +20,21 @@ let currentColor = 'black';
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
+let lastEmittedX = 0;
+let lastEmittedY = 0;
 let lastSendTime = 0;
 
 // Set canvas size to fill the window
 function resizeCanvas() {
+  const snapshot = document.createElement('canvas');
+  snapshot.width = canvas.width;
+  snapshot.height = canvas.height;
+  snapshot.getContext('2d')?.drawImage(canvas, 0, 0);
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  if (snapshot.width > 0 && snapshot.height > 0) {
+    ctx.drawImage(snapshot, 0, 0, snapshot.width, snapshot.height, 0, 0, canvas.width, canvas.height);
+  }
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -58,60 +67,58 @@ function drawLine(x0: number, y0: number, x1: number, y1: number, color: string,
   lastSendTime = now;
 
   const data: DrawingMessage = {
-    x0: x0 / canvas.width,
-    y0: y0 / canvas.height,
+    x0: lastEmittedX / canvas.width,
+    y0: lastEmittedY / canvas.height,
     x1: x1 / canvas.width,
     y1: y1 / canvas.height,
     color,
   };
+  lastEmittedX = x1;
+  lastEmittedY = y1;
 
-  fetch(`${serverUrl}/drawing`, {
+  void fetch(`${serverUrl}/drawing`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-  });
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Could not publish drawing: ${response.status}`);
+    }
+  }).catch(console.error);
 }
 
-canvas.addEventListener('mousedown', (e: MouseEvent) => {
+function canvasPoint(clientX: number, clientY: number) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: Math.min(canvas.width, Math.max(0, ((clientX - rect.left) / rect.width) * canvas.width)),
+    y: Math.min(canvas.height, Math.max(0, ((clientY - rect.top) / rect.height) * canvas.height)),
+  };
+}
+
+canvas.addEventListener('pointerdown', (event: PointerEvent) => {
+  const point = canvasPoint(event.clientX, event.clientY);
   drawing = true;
-  lastX = e.clientX;
-  lastY = e.clientY;
+  lastX = point.x;
+  lastY = point.y;
+  lastEmittedX = point.x;
+  lastEmittedY = point.y;
+  canvas.setPointerCapture(event.pointerId);
 });
 
-canvas.addEventListener('mousemove', (e: MouseEvent) => {
+canvas.addEventListener('pointermove', (event: PointerEvent) => {
   if (!drawing) return;
-  drawLine(lastX, lastY, e.clientX, e.clientY, currentColor, true);
-  lastX = e.clientX;
-  lastY = e.clientY;
+  const point = canvasPoint(event.clientX, event.clientY);
+  drawLine(lastX, lastY, point.x, point.y, currentColor, true);
+  lastX = point.x;
+  lastY = point.y;
 });
 
-canvas.addEventListener('mouseup', () => {
+canvas.addEventListener('pointerup', (event: PointerEvent) => {
   drawing = false;
+  canvas.releasePointerCapture(event.pointerId);
 });
 
-canvas.addEventListener('mouseleave', () => {
-  drawing = false;
-});
-
-// Touch support
-canvas.addEventListener('touchstart', (e: TouchEvent) => {
-  e.preventDefault();
-  const touch = e.touches[0];
-  drawing = true;
-  lastX = touch.clientX;
-  lastY = touch.clientY;
-});
-
-canvas.addEventListener('touchmove', (e: TouchEvent) => {
-  e.preventDefault();
-  if (!drawing) return;
-  const touch = e.touches[0];
-  drawLine(lastX, lastY, touch.clientX, touch.clientY, currentColor, true);
-  lastX = touch.clientX;
-  lastY = touch.clientY;
-});
-
-canvas.addEventListener('touchend', () => {
+canvas.addEventListener('pointercancel', () => {
   drawing = false;
 });
 
@@ -135,6 +142,9 @@ function transports(): TransportEndpoint[] {
 // Centrifugo connection
 async function init() {
   const tokenResponse = await fetch(`${serverUrl}/centrifugo-token`);
+  if (!tokenResponse.ok) {
+    throw new Error(`Could not fetch token: ${tokenResponse.status}`);
+  }
   const token = await tokenResponse.text();
 
   const centrifuge = new Centrifuge(transports(), { token });
@@ -157,4 +167,4 @@ async function init() {
   centrifuge.connect();
 }
 
-init();
+void init().catch(console.error);

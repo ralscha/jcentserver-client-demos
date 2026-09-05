@@ -1,8 +1,8 @@
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 import {v4 as uuidv4} from 'uuid';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 interface Location {
     x: number;
@@ -19,6 +19,10 @@ interface SnakeMessage {
     type: 'join' | 'leave' | 'update' | 'dead' | 'kill';
     data?: SnakeData[];
     id?: string;
+}
+
+interface JoinGameResponse {
+    snakeId: string;
 }
 
 class Snake {
@@ -48,6 +52,7 @@ class Game {
     entities: { [key: string]: Snake } = {};
     context: CanvasRenderingContext2D | null = null;
     playerId: string;
+    snakeId: string | null = null;
     isConnected = false;
     hasJoined = false;
 
@@ -100,7 +105,7 @@ class Game {
         this.direction = direction;
 
         // Send direction change to server
-        fetch(`${serverUrl}/direction`, {
+        void fetch(`${serverUrl}/direction`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -109,12 +114,18 @@ class Game {
                 playerId: this.playerId,
                 direction: direction
             })
+        }).then((response) => {
+            if (!response.ok) {
+                throw new Error(`Direction change failed with status ${response.status}`);
+            }
         }).catch(error => {
             Console.log('Error sending direction: ' + error);
         });
     }
 
     async joinGame(): Promise<void> {
+        const joinBtn = document.getElementById('joinBtn') as HTMLButtonElement;
+        joinBtn.disabled = true;
         try {
             const response = await fetch(`${serverUrl}/join`, {
                 method: 'POST',
@@ -125,30 +136,31 @@ class Game {
             });
 
             if (response.ok) {
+                const result = await response.json() as JoinGameResponse;
+                this.snakeId = result.snakeId;
                 this.hasJoined = true;
-                const joinBtn = document.getElementById('joinBtn') as HTMLButtonElement;
                 joinBtn.textContent = 'Joined Game';
-                joinBtn.disabled = true;
                 this.startGameLoop();
             } else {
-                Console.log('Failed to join game');
+                throw new Error(`Join failed with status ${response.status}`);
             }
         } catch (error) {
             Console.log('Error joining game: ' + error);
+            joinBtn.disabled = !this.isConnected;
         }
     }
 
     async leaveGame(): Promise<void> {
         if (this.hasJoined) {
             try {
-                await fetch(`${serverUrl}/leave`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({playerId: this.playerId})
+                const response = await fetch(`${serverUrl}/leave?playerId=${encodeURIComponent(this.playerId)}`, {
+                    method: 'POST'
                 });
+                if (!response.ok) {
+                    throw new Error(`Leave failed with status ${response.status}`);
+                }
                 this.hasJoined = false;
+                this.snakeId = null;
             } catch (error) {
                 Console.log('Error leaving game: ' + error);
             }
@@ -172,6 +184,7 @@ class Game {
         this.nextFrame = null;
         if (this.interval !== null) {
             clearInterval(this.interval);
+            this.interval = null;
         }
     }
 
@@ -226,6 +239,9 @@ class Game {
         try {
             // Get JWT token from server
             const tokenResponse = await fetch(`${serverUrl}/token`);
+            if (!tokenResponse.ok) {
+                throw new Error(`Could not fetch token: ${tokenResponse.status}`);
+            }
             const token = await tokenResponse.text();
 
             this.centrifuge = new Centrifuge(this.transports(), {
@@ -253,7 +269,7 @@ class Game {
                 joinBtn.disabled = true;
 
                 if (this.hasJoined) {
-                    this.leaveGame();
+                    void this.leaveGame();
                 }
             });
 
@@ -288,11 +304,15 @@ class Game {
                         }
                         break;
                     case 'dead':
-                        Console.log('Your snake is dead!');
-                        this.direction = 'none';
+                        if (packet.id === this.snakeId) {
+                            Console.log('Your snake is dead!');
+                            this.direction = 'none';
+                        }
                         break;
                     case 'kill':
-                        Console.log('Head shot!');
+                        if (packet.id === this.snakeId) {
+                            Console.log('Head shot!');
+                        }
                         break;
                 }
             });
@@ -309,7 +329,10 @@ class Game {
     updateStatus(message: string, connected: boolean): void {
         const statusElement = document.getElementById('status');
         if (statusElement) {
-            statusElement.innerHTML = `<span class="${connected ? 'connected' : 'disconnected'}">${message}</span>`;
+            const status = document.createElement('span');
+            status.className = connected ? 'connected' : 'disconnected';
+            status.textContent = message;
+            statusElement.replaceChildren(status);
         }
     }
 }
@@ -320,7 +343,7 @@ class Console {
         if (console) {
             const p = document.createElement('p');
             p.style.overflowWrap = 'break-word';
-            p.innerHTML = message;
+            p.textContent = message;
             console.appendChild(p);
             while (console.childNodes.length > 25) {
                 const firstChild = console.firstChild;
@@ -339,5 +362,7 @@ game.initialize();
 
 // Cleanup when page unloads
 window.addEventListener('beforeunload', () => {
-    game.leaveGame();
+    if (game.hasJoined) {
+        navigator.sendBeacon(`${serverUrl}/leave?playerId=${encodeURIComponent(game.playerId)}`);
+    }
 });

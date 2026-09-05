@@ -3,8 +3,8 @@ import { DataSet } from 'vis-data';
 import { Network } from 'vis-network';
 import './style.css';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 interface PeerInfo {
   rtcPeerConnection: RTCPeerConnection;
@@ -44,17 +44,25 @@ const configuration: RTCConfiguration = {
 };
 
 async function post(path: string, body: unknown) {
-  await fetch(`${serverUrl}${path}`, {
+  const response = await fetch(`${serverUrl}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
 }
 
 function onIceCandidate(peerKey: string, event: RTCPeerConnectionIceEvent) {
   if (event.candidate) {
-    post('/ice', { receiver: peerKey, id: clientId, candidate: event.candidate });
+    void post('/ice', { receiver: peerKey, id: clientId, candidate: event.candidate }).catch(console.error);
   }
+}
+
+function removePeerVisual(peerKey: string) {
+  nodes.remove(peerKey);
+  edges.remove(edges.getIds({ filter: (edge) => edge.from === peerKey || edge.to === peerKey }));
 }
 
 function handleChannelStatusChange(peerKey: string, channel: RTCDataChannel) {
@@ -78,18 +86,16 @@ function handleChannelStatusChange(peerKey: string, channel: RTCDataChannel) {
       }
     }
   } else {
-    nodes.remove(peerKey);
+    removePeerVisual(peerKey);
   }
 }
 
 function onDataChannelMessage(peerKey: string, event: MessageEvent) {
-  const output = document.getElementById('output')!;
-  output.innerHTML =
-    `<p>Message '<strong>${event.data}</strong>' received from ${peerKey}</p>` + output.innerHTML;
+  prependOutput("Message '", String(event.data), `' received from ${peerKey}`);
 }
 
 function peerConnected(peerId: string) {
-  if (peerId === clientId) return;
+  if (peerId === clientId || peers.has(peerId)) return;
 
   const rtcPeerConnection = new RTCPeerConnection(configuration);
   rtcPeerConnection.onicecandidate = (e) => onIceCandidate(peerId, e);
@@ -120,7 +126,7 @@ function peerDisconnected(peerId: string) {
     peer.dataChannel?.close();
     peer.rtcPeerConnection.close();
     peers.delete(peerId);
-    nodes.remove(peerId);
+    removePeerVisual(peerId);
   }
 }
 
@@ -173,13 +179,23 @@ function iceReceived(msg: SignalingEvent) {
 }
 
 function sendP2PMessage(msg: string) {
-  const output = document.getElementById('output')!;
-  output.innerHTML = `<p>Sent message '<strong>${msg}</strong>' to peers</p>` + output.innerHTML;
+  if (!msg) return;
+  prependOutput("Sent message '", msg, "' to peers");
   for (const peer of peers.values()) {
     if (peer.dataChannel && peer.dataChannel.readyState === 'open') {
       peer.dataChannel.send(msg);
     }
   }
+}
+
+function prependOutput(prefix: string, message: string, suffix: string) {
+  const output = document.getElementById('output')!;
+  const item = document.createElement('p');
+  item.append(document.createTextNode(prefix));
+  const strong = document.createElement('strong');
+  strong.textContent = message;
+  item.append(strong, document.createTextNode(suffix));
+  output.prepend(item);
 }
 
 // UI event handlers
@@ -216,6 +232,9 @@ function transports(): TransportEndpoint[] {
 // Centrifugo connection
 async function init() {
   const tokenResponse = await fetch(`${serverUrl}/centrifugo-token?clientId=${encodeURIComponent(clientId!)}`);
+  if (!tokenResponse.ok) {
+    throw new Error(`Could not fetch token: ${tokenResponse.status}`);
+  }
   const token = await tokenResponse.text();
 
   const centrifuge = new Centrifuge(transports(), { token });
@@ -243,13 +262,13 @@ async function init() {
 
   // Notify the server that we are online
   centrifuge.on('connected', () => {
-    post('/connect', { clientId });
+    void post('/connect', { clientId }).catch(console.error);
   });
 
   // Notify the server on disconnect
   window.addEventListener('beforeunload', () => {
-    navigator.sendBeacon(`${serverUrl}/disconnect`, JSON.stringify({ clientId }));
+    navigator.sendBeacon(`${serverUrl}/disconnect?clientId=${encodeURIComponent(clientId!)}`);
   });
 }
 
-init();
+void init().catch(console.error);

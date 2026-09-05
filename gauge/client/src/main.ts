@@ -1,8 +1,12 @@
-import * as echarts from 'echarts';
+import * as echarts from 'echarts/core';
+import {GaugeChart} from 'echarts/charts';
+import {CanvasRenderer} from 'echarts/renderers';
 import {Centrifuge, TransportEndpoint} from 'centrifuge';
 
-const serverUrl = 'http://localhost:8080';
-const centrifugoBase = 'localhost:8000';
+echarts.use([GaugeChart, CanvasRenderer]);
+
+const serverUrl = import.meta.env.VITE_SERVER_URL ?? 'http://localhost:8080';
+const centrifugoBase = import.meta.env.VITE_CENTRIFUGO_BASE_ADDRESS ?? 'localhost:8000';
 
 const names = ['s1', 's2', 's3', 's4', 's5'];
 const thresholds = [0.1, 0.2, 0.7, 0.5, 0.9];
@@ -58,7 +62,12 @@ async function main() {
         gauges.push(chart);
     }
 
+    window.addEventListener('resize', () => gauges.forEach((gauge) => gauge.resize()));
+
     const response = await fetch(`${serverUrl}/centrifugo-token`);
+    if (!response.ok) {
+        throw new Error(`Could not fetch token: ${response.status}`);
+    }
     const token = await response.text();
 
     const centrifuge = new Centrifuge(transports(), {token});

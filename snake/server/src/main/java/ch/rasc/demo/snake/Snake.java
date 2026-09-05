@@ -36,12 +36,12 @@ public class Snake {
 	private void resetState() {
 		this.direction = Direction.NONE;
 		this.head = SnakeUtils.getRandomLocation();
+		this.lastHead = null;
 		this.tail.clear();
 		this.length = DEFAULT_LENGTH;
 	}
 
 	private synchronized void kill() {
-		System.out.println("Snake " + this.id + " was killed! Resetting state.");
 		resetState();
 	}
 
@@ -49,7 +49,7 @@ public class Snake {
 		this.length++;
 	}
 
-	public synchronized void update(Collection<Snake> snakes) {
+	public synchronized String update(Collection<Snake> snakes) {
 		Location nextLocation = this.head.getAdjacentLocation(this.direction);
 		if (nextLocation.x >= SnakeUtils.PLAYFIELD_WIDTH) {
 			nextLocation.x = 0;
@@ -58,10 +58,10 @@ public class Snake {
 			nextLocation.y = 0;
 		}
 		if (nextLocation.x < 0) {
-			nextLocation.x = SnakeUtils.PLAYFIELD_WIDTH;
+			nextLocation.x = SnakeUtils.PLAYFIELD_WIDTH - SnakeUtils.GRID_SIZE;
 		}
 		if (nextLocation.y < 0) {
-			nextLocation.y = SnakeUtils.PLAYFIELD_HEIGHT;
+			nextLocation.y = SnakeUtils.PLAYFIELD_HEIGHT - SnakeUtils.GRID_SIZE;
 		}
 		if (this.direction != Direction.NONE) {
 			this.tail.addFirst(this.head);
@@ -71,20 +71,23 @@ public class Snake {
 			this.head = nextLocation;
 		}
 
-		handleCollisions(snakes);
+		return handleCollisions(snakes);
 	}
 
-	private void handleCollisions(Collection<Snake> snakes) {
+	private String handleCollisions(Collection<Snake> snakes) {
 		for (Snake snake : snakes) {
-			boolean headCollision = this.id != snake.id && snake.getHead().equals(this.head);
+			boolean headCollision = !this.id.equals(snake.id) && snake.getHead().equals(this.head);
 			boolean tailCollision = snake.getTail().contains(this.head);
 			if (headCollision || tailCollision) {
 				kill();
-				if (this.id != snake.id) {
+				if (!this.id.equals(snake.id)) {
 					snake.reward();
+					return snake.id;
 				}
+				return null;
 			}
 		}
+		return null;
 	}
 
 	public synchronized Location getHead() {
@@ -92,10 +95,16 @@ public class Snake {
 	}
 
 	public synchronized Collection<Location> getTail() {
-		return this.tail;
+		return List.copyOf(this.tail);
 	}
 
 	public synchronized void setDirection(Direction direction) {
+		if ((this.direction == Direction.NORTH && direction == Direction.SOUTH)
+				|| (this.direction == Direction.SOUTH && direction == Direction.NORTH)
+				|| (this.direction == Direction.EAST && direction == Direction.WEST)
+				|| (this.direction == Direction.WEST && direction == Direction.EAST)) {
+			return;
+		}
 		this.direction = direction;
 	}
 
@@ -125,12 +134,8 @@ public class Snake {
 		return this.hexColor;
 	}
 
-	public boolean isDead() {
+	public synchronized boolean isDead() {
 		return this.direction == Direction.NONE;
-	}
-
-	public boolean hasKilled() {
-		return this.length > DEFAULT_LENGTH;
 	}
 
 }
