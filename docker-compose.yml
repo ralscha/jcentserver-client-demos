@@ -18,7 +18,7 @@ services:
 
   centrifugo:
     container_name: centrifugo6
-    image: centrifugo/centrifugo:v6.8.3
+    image: centrifugo/centrifugo:v6.10.1
     depends_on:
       postgres:
         condition: service_healthy

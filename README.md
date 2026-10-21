@@ -2,6 +2,12 @@
 
 Runnable examples for [`jcentserver-client`](https://github.com/ralscha/jcentserver-client) and Centrifugo 6.
 
+The clients use [Centrifuge 5.8.0](https://github.com/centrifugal/centrifuge-js/releases/tag/5.8.0),
+and Docker Compose pins [Centrifugo 6.10.1](https://github.com/centrifugal/centrifugo/releases/tag/v6.10.1).
+Centrifuge now disconnects when a page enters the browser's back/forward cache and
+reconnects with recovery when it is restored. Exceptions thrown from SDK event
+handlers stop the connection, so handle application errors inside those callbacks.
+
 | Demo | What it demonstrates | Server port | Client port |
 | --- | --- | ---: | ---: |
 | `chat` | Multi-room chat with cached history | 8080 | 5173 |
