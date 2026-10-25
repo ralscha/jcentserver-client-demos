@@ -1,0 +1,86 @@
+# Weekly version updates; security updates are enabled in repository settings.
+# Minor and patch releases are grouped; major releases remain separate.
+version: 2
+updates:
+- package-ecosystem: docker-compose
+  directory: /
+  schedule:
+    interval: weekly
+    day: monday
+    time: "09:00"
+    timezone: Europe/Zurich
+  open-pull-requests-limit: 5
+  groups:
+    minor-and-patch:
+      applies-to: version-updates
+      patterns:
+      - '*'
+      update-types:
+      - minor
+      - patch
+- package-ecosystem: maven
+  directories:
+  - /chat/server
+  - /datachannel/server
+  - /gauge/server
+  - /iss/server
+  - /map-cursors/server
+  - /maps/server
+  - /pg-orders/server
+  - /poll/server
+  - /presence-dashboard/server
+  - /recovery-lab/server
+  - /shared-poll-votes/server
+  - /simple-chat-2/server
+  - /simple-chat/server
+  - /smoothie/server
+  - /snake/server
+  - /tennis-delta/server
+  - /whiteboard/server
+  schedule:
+    interval: weekly
+    day: monday
+    time: "09:00"
+    timezone: Europe/Zurich
+  open-pull-requests-limit: 5
+  groups:
+    minor-and-patch:
+      applies-to: version-updates
+      patterns:
+      - '*'
+      update-types:
+      - minor
+      - patch
+- package-ecosystem: npm
+  directories:
+  - /chat/client
+  - /datachannel/client
+  - /gauge/client
+  - /iss/client
+  - /map-cursors/client
+  - /maps/client
+  - /pg-orders/client
+  - /poll/client
+  - /presence-dashboard/client
+  - /recovery-lab/client
+  - /shared-poll-votes/client
+  - /simple-chat-2/client
+  - /simple-chat/client
+  - /smoothie/client
+  - /snake/client
+  - /tennis-delta/client
+  - /whiteboard/client
+  schedule:
+    interval: weekly
+    day: monday
+    time: "09:00"
+    timezone: Europe/Zurich
+  open-pull-requests-limit: 5
+  groups:
+    minor-and-patch:
+      applies-to: version-updates
+      patterns:
+      - '*'
+      update-types:
+      - minor
+      - patch
