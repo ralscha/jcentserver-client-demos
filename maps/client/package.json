@@ -10,10 +10,10 @@
   },
   "devDependencies": {
     "typescript": "7.0.2",
-    "vite": "8.3.5"
+    "vite": "8.3.8"
   },
   "dependencies": {
-    "@maptiler/sdk": "4.2.0",
+    "@maptiler/sdk": "4.2.1",
     "centrifuge": "5.8.0"
   }
 }
