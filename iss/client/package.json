@@ -14,7 +14,7 @@
     "vite": "8.3.8"
   },
   "dependencies": {
-    "@maptiler/sdk": "4.2.1",
+    "@maptiler/sdk": "5.0.0",
     "centrifuge": "5.8.0"
   }
 }
